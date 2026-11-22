@@ -1,0 +1,3154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="클릭데이터기록">
+    <meta name="theme-color" content="#2563eb">
+    <title>클릭으로 끝내는 데이터 기록 - 개별 시도 교수(DTT) 중재 데이터 관리 앱</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Noto Sans KR & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans KR"', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        aba: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        /* 커스텀 스크롤바 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        /* Netlify 무료 호스팅 자동 삽입 배지 숨김 */
+        a[href*="netlify.com"],
+        [class*="netlify-badge"],
+        [id*="netlify-badge"] {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        /* 버튼 클릭 미세 애니메이션 */
+        .trial-btn {
+            transition: all 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .trial-btn:active {
+            transform: scale(0.92);
+        }
+        /* 모달 및 화면 전환 애니메이션 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .fade-animate {
+            animation: fadeIn 0.22s ease-out forwards;
+        }
+        /* 시작 화면 세련된 그라데이션 & 도트 패턴 배경 */
+        .landing-hero-bg {
+            background-color: #f8fafc;
+            background-image:
+                radial-gradient(at 12% 18%, rgba(219, 234, 254, 0.78) 0px, transparent 52%),
+                radial-gradient(at 88% 15%, rgba(224, 231, 255, 0.75) 0px, transparent 50%),
+                radial-gradient(at 82% 88%, rgba(209, 250, 229, 0.6) 0px, transparent 52%),
+                radial-gradient(at 15% 85%, rgba(254, 243, 199, 0.45) 0px, transparent 48%),
+                radial-gradient(rgba(148, 163, 184, 0.26) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 22px 22px;
+        }
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+        .float-slow {
+            animation: floatSlow 4s ease-in-out infinite;
+        }
+        /* 인쇄 및 PDF 저장 전용 스타일 */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 12mm;
+            }
+            body {
+                background-color: #ffffff !important;
+                color: #0f172a !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .no-print, header, footer, #startScreen, #toastContainer, #confirmModal {
+                display: none !important;
+            }
+            #mainAppContainer {
+                display: block !important;
+            }
+            main {
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            section {
+                box-shadow: none !important;
+                border: 1px solid #cbd5e1 !important;
+                break-inside: avoid;
+                margin-bottom: 12px !important;
+            }
+            #printReportHeader {
+                display: flex !important;
+            }
+            #graphOuterWrapper {
+                overflow: visible !important;
+                border: 1px solid #cbd5e1 !important;
+            }
+            #abaGridCanvas {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- =========================================================================
+         1. 처음 시작 화면 (랜딩 허브)
+         ========================================================================= -->
+    <div id="startScreen" class="landing-hero-bg min-h-screen flex items-center justify-center p-4 sm:p-6">
+        <div class="relative z-10 max-w-xl w-full bg-white/90 backdrop-blur-md rounded-[2rem] border border-white shadow-[0_20px_50px_rgba(30,58,138,0.10)] p-6 sm:p-9 text-center space-y-5 fade-animate">
+            <!-- 상단 브랜드 로고 (시원하고 돋보이는 크기로 확대) -->
+            <div class="flex flex-col items-center justify-center float-slow">
+                <div onclick="document.getElementById('customLogoFileInput').click()" title="클릭하여 원본 로고 이미지(로고_2.png) 연결" class="cursor-pointer relative group w-44 sm:w-52 rounded-2xl bg-[#ede6fb] border-2 border-purple-300/90 p-1.5 shadow-md overflow-hidden">
+                    <img id="startBrandLogoImg" src="로고_2.png" alt="ABA Special Edu Lab by 신 로고"
+                        onerror="if(!this.dataset.triedAlt){this.dataset.triedAlt='1';this.src='로고.png';}else{this.classList.add('hidden');document.getElementById('startBrandLogoSvg').classList.remove('hidden');}"
+                        class="w-full h-auto rounded-xl object-contain block mx-auto">
+                    <!-- 원본 일러스트를 정밀하게 재현한 SVG (아치형 리본, 구름·무지개, 캐릭터 비율, 크레파스 질감 반영) -->
+                    <svg id="startBrandLogoSvg" class="hidden w-full h-auto rounded-xl block mx-auto" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="crayonBg" cx="50%" cy="46%" r="62%">
+                                <stop offset="0%" stop-color="#f5f0ff"/>
+                                <stop offset="65%" stop-color="#e3d5fa"/>
+                                <stop offset="100%" stop-color="#d2bff5"/>
+                            </radialGradient>
+                            <filter id="crayonTexture" x="-5%" y="-5%" width="110%" height="110%">
+                                <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" result="noise"/>
+                                <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>
+                            </filter>
+                            <!-- 아치형 Special Edu Lab 텍스트용 곡선 경로 -->
+                            <path id="ribbonTextArc" d="M 86 306 Q 200 282 324 306" fill="none"/>
+                        </defs>
+                        <!-- 보라빛 크레파스 배경 -->
+                        <rect width="400" height="400" rx="28" fill="url(#crayonBg)"/>
+                        <g filter="url(#crayonTexture)">
+                            <!-- 무지개 5색 아치 (두 구름 위를 연결) -->
+                            <path d="M 118 76 A 84 68 0 0 1 282 76" fill="none" stroke="#ef7d6b" stroke-width="8" stroke-linecap="round"/>
+                            <path d="M 124 78 A 78 62 0 0 1 276 78" fill="none" stroke="#f7b955" stroke-width="7" stroke-linecap="round"/>
+                            <path d="M 130 80 A 72 56 0 0 1 270 80" fill="none" stroke="#f7e06e" stroke-width="7" stroke-linecap="round"/>
+                            <path d="M 136 82 A 66 50 0 0 1 264 82" fill="none" stroke="#78c47b" stroke-width="7" stroke-linecap="round"/>
+                            <path d="M 142 84 A 60 44 0 0 1 258 84" fill="none" stroke="#6aa9e9" stroke-width="7" stroke-linecap="round"/>
+
+                            <!-- 좌측 하늘색 뭉게구름 (남자아이 정수리 위) -->
+                            <g fill="#aef0f7">
+                                <circle cx="104" cy="74" r="14"/>
+                                <circle cx="121" cy="67" r="17"/>
+                                <circle cx="139" cy="73" r="14"/>
+                                <circle cx="121" cy="80" r="14"/>
+                            </g>
+                            <!-- 우측 하늘색 뭉게구름 (여자아이 정수리 위) -->
+                            <g fill="#aef0f7">
+                                <circle cx="261" cy="73" r="14"/>
+                                <circle cx="279" cy="67" r="17"/>
+                                <circle cx="296" cy="74" r="14"/>
+                                <circle cx="279" cy="80" r="14"/>
+                            </g>
+
+                            <!-- 좌우 노란 반짝임 선 -->
+                            <line x1="46" y1="84" x2="64" y2="92" stroke="#f6bd41" stroke-width="5.5" stroke-linecap="round"/>
+                            <line x1="40" y1="103" x2="60" y2="108" stroke="#f6bd41" stroke-width="5.5" stroke-linecap="round"/>
+                            <line x1="354" y1="84" x2="336" y2="92" stroke="#f6bd41" stroke-width="5.5" stroke-linecap="round"/>
+                            <line x1="360" y1="103" x2="340" y2="108" stroke="#f6bd41" stroke-width="5.5" stroke-linecap="round"/>
+
+                            <!-- 남자아이 캐릭터 (좌측) -->
+                            <g>
+                                <rect x="92" y="154" width="76" height="22" rx="11" fill="#2e9c95"/>
+                                <circle cx="84" cy="126" r="9" fill="#f5c79e"/>
+                                <circle cx="176" cy="126" r="9" fill="#f5c79e"/>
+                                <ellipse cx="130" cy="122" rx="46" ry="42" fill="#f7cca5"/>
+                                <!-- 갈색 뾰족 앞머리 -->
+                                <path d="M 84 120 C 84 82, 176 82, 176 120 C 166 105, 154 116, 144 106 C 134 117, 122 105, 112 116 C 102 106, 92 116, 84 120 Z" fill="#825329"/>
+                                <circle cx="114" cy="123" r="4.5" fill="#3a2f2a"/>
+                                <circle cx="146" cy="123" r="4.5" fill="#3a2f2a"/>
+                                <circle cx="101" cy="136" r="8" fill="#f29188" opacity="0.72"/>
+                                <circle cx="159" cy="136" r="8" fill="#f29188" opacity="0.72"/>
+                                <path d="M 113 138 Q 130 153 147 138" fill="none" stroke="#3a2f2a" stroke-width="3.6" stroke-linecap="round"/>
+                            </g>
+
+                            <!-- 여자아이 캐릭터 (우측) -->
+                            <g>
+                                <!-- 양갈래 머리 -->
+                                <ellipse cx="213" cy="146" rx="13" ry="18" transform="rotate(22 213 146)" fill="#825329"/>
+                                <ellipse cx="327" cy="146" rx="13" ry="18" transform="rotate(-22 327 146)" fill="#825329"/>
+                                <rect x="232" y="154" width="76" height="22" rx="11" fill="#ef7e56"/>
+                                <circle cx="224" cy="126" r="9" fill="#f5c79e"/>
+                                <circle cx="316" cy="126" r="9" fill="#f5c79e"/>
+                                <ellipse cx="270" cy="122" rx="46" ry="42" fill="#f7cca5"/>
+                                <path d="M 224 120 C 224 82, 316 82, 316 120 C 302 104, 286 114, 270 105 C 254 114, 238 104, 224 120 Z" fill="#825329"/>
+                                <circle cx="254" cy="123" r="4.5" fill="#3a2f2a"/>
+                                <circle cx="286" cy="123" r="4.5" fill="#3a2f2a"/>
+                                <circle cx="241" cy="136" r="8" fill="#f29188" opacity="0.72"/>
+                                <circle cx="299" cy="136" r="8" fill="#f29188" opacity="0.72"/>
+                                <path d="M 253 138 Q 270 153 287 138" fill="none" stroke="#3a2f2a" stroke-width="3.6" stroke-linecap="round"/>
+                            </g>
+
+                            <!-- 펼쳐진 큰 책 -->
+                            <path d="M 74 170 Q 138 162 200 175 Q 262 162 326 170 L 344 274 Q 268 260 200 276 Q 132 260 56 274 Z" fill="#fffdf6" stroke="#6f75d8" stroke-width="5" stroke-linejoin="round"/>
+                            <path d="M 200 175 L 200 276" stroke="#858be3" stroke-width="3"/>
+
+                            <!-- 책 위를 잡은 네 개의 고사리 손 -->
+                            <g fill="#f7cca5" stroke="#c58c5e" stroke-width="1.5">
+                                <rect x="103" y="160" width="24" height="14" rx="7"/>
+                                <rect x="142" y="160" width="24" height="14" rx="7"/>
+                                <rect x="234" y="160" width="24" height="14" rx="7"/>
+                                <rect x="273" y="160" width="24" height="14" rx="7"/>
+                            </g>
+
+                            <!-- 파랑 퍼즐 조각 (좌측) -->
+                            <path d="M 25 204 L 43 199 A 7 7 0 1 1 55 196 L 71 192 L 76 210 A 7 7 0 1 1 79 222 L 84 239 L 66 244 A 7 7 0 1 0 54 247 L 37 251 L 32 233 A 7 7 0 1 0 29 221 Z" fill="#4387d8"/>
+
+                            <!-- 초록 퍼즐 조각 (우측) -->
+                            <path d="M 326 201 L 344 204 A 7 7 0 1 1 356 206 L 374 209 L 370 227 A 7 7 0 1 1 368 239 L 364 257 L 346 254 A 7 7 0 1 0 334 252 L 316 249 L 320 231 A 7 7 0 1 0 322 219 Z" fill="#77bf56"/>
+
+                            <!-- ABA 입체 글자 (청록 A, 노랑 B, 주황 A) -->
+                            <text x="128" y="255" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-weight="900" font-size="80" fill="#1e9c92">A</text>
+                            <text x="200" y="255" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-weight="900" font-size="80" fill="#f7b626">B</text>
+                            <text x="272" y="255" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-weight="900" font-size="80" fill="#f16d3b">A</text>
+                            <!-- 우측 A 위 작은 노란 반짝임 -->
+                            <line x1="296" y1="183" x2="288" y2="194" stroke="#f7b626" stroke-width="4" stroke-linecap="round"/>
+                            <line x1="308" y1="193" x2="296" y2="200" stroke="#f7b626" stroke-width="4" stroke-linecap="round"/>
+
+                            <!-- 아치형 곡선 리본 배너 (원본 로고처럼 위로 둥글게 휘어진 리본) -->
+                            <path d="M 46 276 Q 200 246 354 276 Q 382 284 378 310 Q 374 334 344 330 Q 200 304 56 330 Q 26 334 22 310 Q 18 284 46 276 Z" fill="#fffdf6" stroke="#757be0" stroke-width="5" stroke-linejoin="round"/>
+                            <!-- 리본 내부 노란 하이라이트 아치 선 -->
+                            <path d="M 122 314 Q 200 300 308 314" fill="none" stroke="#f7b626" stroke-width="3.5" stroke-linecap="round"/>
+
+                            <!-- 초록 새싹 아이콘 -->
+                            <path d="M 55 312 Q 55 294 59 288" fill="none" stroke="#68b648" stroke-width="4" stroke-linecap="round"/>
+                            <ellipse cx="46" cy="291" rx="11" ry="6" transform="rotate(-28 46 291)" fill="#7ac655"/>
+                            <ellipse cx="66" cy="288" rx="11" ry="6" transform="rotate(24 66 288)" fill="#63b144"/>
+
+                            <!-- 아치 곡선을 따라 배치된 Special Edu Lab -->
+                            <text font-family="'Noto Sans KR', sans-serif" font-weight="800" font-size="31" fill="#23418c">
+                                <textPath href="#ribbonTextArc" startOffset="50%" text-anchor="middle">Special Edu Lab</textPath>
+                            </text>
+
+                            <!-- — ABA 기반의 특수교육 지원 플랫폼 — -->
+                            <line x1="40" y1="349" x2="66" y2="349" stroke="#736c8a" stroke-width="2"/>
+                            <text x="200" y="354" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-weight="700" font-size="15.5" fill="#5e5775">ABA 기반의 특수교육 지원 플랫폼</text>
+                            <line x1="334" y1="349" x2="360" y2="349" stroke="#736c8a" stroke-width="2"/>
+
+                            <!-- 하단 보라색 알약 배지 'by 신' -->
+                            <line x1="132" y1="373" x2="146" y2="377" stroke="#f7b626" stroke-width="3.5" stroke-linecap="round"/>
+                            <line x1="132" y1="387" x2="146" y2="383" stroke="#f7b626" stroke-width="3.5" stroke-linecap="round"/>
+                            <rect x="156" y="366" width="88" height="26" rx="13" fill="#9a86db"/>
+                            <text x="200" y="384" text-anchor="middle" font-family="'Noto Sans KR', sans-serif" font-weight="800" font-size="15.5" fill="#ffffff">by 신</text>
+                            <line x1="268" y1="373" x2="254" y2="377" stroke="#f7b626" stroke-width="3.5" stroke-linecap="round"/>
+                            <line x1="268" y1="387" x2="254" y2="383" stroke="#f7b626" stroke-width="3.5" stroke-linecap="round"/>
+                        </g>
+                    </svg>
+                    <!-- 로고 영역 클릭 시 원본 로고 이미지 선택 가능 (표시 버튼은 숨김 처리) -->
+                    <input type="file" id="customLogoFileInput" accept="image/*" class="hidden" onchange="if(window.handleCustomLogoUpload) window.handleCustomLogoUpload(event);">
+                </div>
+            </div>
+
+            <!-- 타이틀 및 설명 -->
+            <div class="space-y-3">
+                <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-blue-50 to-indigo-50 text-aba-700 border border-blue-200/80 shadow-2xs">
+                    <i class="fa-solid fa-sparkles text-amber-500"></i> 개별 시도 교수(Discrete Trial Training: DTT) 중재 데이터 관리 앱
+                </span>
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-snug sm:leading-tight">
+                    클릭으로 끝내는<br class="sm:hidden"> <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">데이터 기록</span>
+                </h1>
+                <p class="text-sm sm:text-base text-slate-600 leading-relaxed max-w-lg mx-auto">
+                    학생에게 필요한 영역과 중재 목표(LTO·STO)를 설정하고,<br class="hidden sm:inline">
+                    런유닛 기록으로 선그래프를 완성하여 관리하세요.<br class="hidden sm:inline">
+                    <span class="font-semibold text-slate-700">ABA 데이터 기반의 의사결정을 통해 효과적인 지도가 가능합니다.</span>
+                </p>
+            </div>
+
+            <!-- 직관적 2단계 시작 플로우: [1단계: Google 로그인] -> [2단계: 내 데이터로 시작하기] -->
+            <div class="space-y-2.5 pt-1">
+                <!-- 1단계 카드: Google 로그인 -->
+                <div id="startLoginCard" class="bg-gradient-to-r from-blue-50 via-indigo-50/90 to-purple-50/90 border-2 border-blue-400 rounded-2xl p-4 space-y-3 text-left shadow-sm transition-all">
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div id="step1CircleNum" class="w-8 h-8 rounded-full bg-aba-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow-xs">
+                                1
+                            </div>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span id="startStep1Badge" class="px-2 py-0.5 rounded-md bg-aba-600 text-white text-[10px] font-extrabold">1단계 · 필수 권장</span>
+                                    <span id="startAuthStatusTitle" class="text-xs sm:text-sm font-extrabold text-slate-900 truncate">
+                                        Google 계정으로 로그인
+                                    </span>
+                                </div>
+                                <p id="startAuthStatusDesc" class="text-[11px] sm:text-xs text-slate-600 mt-0.5 leading-snug">
+                                    로그인하면 PC·스마트폰에 저장된 내 학생 기록이 자동으로 불러와집니다.
+                                </p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="openCloudConfigModal()" title="Google 로그인 연동을 위한 Firebase 설정"
+                            class="text-slate-400 hover:text-aba-600 p-1.5 rounded-lg hover:bg-white/80 transition shrink-0 cursor-pointer">
+                            <i class="fa-solid fa-gear text-xs"></i>
+                        </button>
+                    </div>
+
+                    <button type="button" id="startGoogleAuthBtn" onclick="handleGoogleAuthClick()"
+                        class="w-full py-3 px-4 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.99] text-slate-800 border-2 border-slate-300 hover:border-aba-500 font-extrabold text-xs sm:text-sm shadow-xs transition flex items-center justify-center gap-2.5 cursor-pointer">
+                        <i class="fa-brands fa-google text-rose-500 text-base"></i>
+                        <span id="startGoogleAuthBtnText">1. Google 로그인하기</span>
+                    </button>
+                </div>
+
+                <!-- 1단계 -> 2단계 흐름 화살표 -->
+                <div class="flex justify-center -my-1">
+                    <div class="w-7 h-7 rounded-full bg-blue-100 text-aba-700 border border-blue-200 flex items-center justify-center text-xs shadow-2xs">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </div>
+                </div>
+
+                <!-- 2단계 카드: 내 데이터로 시작하기 -->
+                <div id="startStep2Card" class="bg-slate-50/90 border-2 border-slate-200 rounded-2xl p-4 space-y-2.5 text-left transition-all">
+                    <div class="flex items-center gap-3">
+                        <div id="step2CircleNum" class="w-8 h-8 rounded-full bg-slate-400 text-white font-extrabold text-sm flex items-center justify-center shrink-0 transition-colors">
+                            2
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <span id="startStep2Badge" class="px-2 py-0.5 rounded-md bg-slate-500 text-white text-[10px] font-extrabold">2단계</span>
+                                <span id="startStep2Title" class="text-xs sm:text-sm font-extrabold text-slate-800">
+                                    내 데이터로 시작하기
+                                </span>
+                            </div>
+                            <p id="startStep2Desc" class="text-[11px] sm:text-xs text-slate-500 mt-0.5">
+                                로그인 완료 후 아래 버튼을 눌러 학생별 기록 및 그래프 화면으로 들어갑니다.
+                            </p>
+                        </div>
+                    </div>
+
+                    <button type="button" id="mainStartBtn" onclick="enterMainApp()"
+                        class="group w-full py-4 px-6 rounded-xl bg-slate-700 hover:bg-slate-800 active:scale-[0.99] text-white font-extrabold text-base sm:text-lg shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer">
+                        <span id="mainStartBtnText">2. 내 데이터로 시작하기</span>
+                        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 기존 저장 데이터 요약 카드 (데이터 존재 시 표시) -->
+            <div id="savedDataPreviewBox" class="hidden bg-gradient-to-r from-emerald-50/90 via-teal-50/70 to-blue-50/80 border border-emerald-200/90 rounded-2xl p-4 text-left space-y-1.5 shadow-2xs">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        기존에 저장된 기록이 있습니다
+                    </span>
+                    <span class="text-[11px] font-medium text-emerald-700/80 bg-white/80 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                        자동 저장됨
+                    </span>
+                </div>
+                <div id="savedDataSummaryText" class="text-xs sm:text-sm text-slate-700 font-medium pl-3.5">
+                    <!-- JS에서 동적 채움 -->
+                </div>
+            </div>
+
+            <!-- 주요 기능 3가지 요약 배지 -->
+            <div class="grid grid-cols-3 gap-3 text-xs text-slate-600 pt-1">
+                <div class="bg-slate-50/90 hover:bg-blue-50/60 transition rounded-2xl p-3.5 border border-slate-200/80 flex flex-col items-center gap-1.5">
+                    <div class="w-9 h-9 rounded-xl bg-blue-100/80 text-aba-600 flex items-center justify-center">
+                        <i class="fa-solid fa-user-graduate text-base"></i>
+                    </div>
+                    <span class="font-bold text-slate-800">학생·목표 관리</span>
+                </div>
+                <div class="bg-slate-50/90 hover:bg-emerald-50/60 transition rounded-2xl p-3.5 border border-slate-200/80 flex flex-col items-center gap-1.5">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-100/80 text-emerald-600 flex items-center justify-center">
+                        <i class="fa-solid fa-hand-pointer text-base"></i>
+                    </div>
+                    <span class="font-bold text-slate-800">20런유닛 원클릭</span>
+                </div>
+                <div class="bg-slate-50/90 hover:bg-indigo-50/60 transition rounded-2xl p-3.5 border border-slate-200/80 flex flex-col items-center gap-1.5">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-100/80 text-indigo-600 flex items-center justify-center">
+                        <i class="fa-solid fa-chart-line text-base"></i>
+                    </div>
+                    <span class="font-bold text-slate-800">실시간 선그래프</span>
+                </div>
+            </div>
+
+            <!-- 보조 유틸리티 버튼 (Google 로그인 중심의 깔끔한 UI) -->
+            <div class="pt-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button type="button" onclick="openAppInstallGuide()"
+                    class="w-full py-2.5 px-3 rounded-xl bg-blue-50/80 hover:bg-blue-100/80 text-aba-700 border border-blue-200/80 font-semibold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                    <span>바탕화면 앱 설치 방법</span>
+                </button>
+                <button type="button" onclick="openQrShareModal()"
+                    class="w-full py-2.5 px-3 rounded-xl bg-indigo-50/80 hover:bg-indigo-100/80 text-indigo-700 border border-indigo-200/80 font-semibold text-xs sm:text-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span>QR 코드로 앱 공유</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         2. 메인 데이터 기록 워크스페이스 (시작하기 클릭 후 표시)
+         ========================================================================= -->
+    <div id="mainAppContainer" class="hidden min-h-screen flex-col">
+
+        <!-- 상단 내비게이션 헤더 -->
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs no-print">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
+                <!-- 좌측: 첫 화면 이동 + 브랜드 로고 및 타이틀 -->
+                <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                    <button type="button" onclick="showStartScreen()" title="첫 화면으로 돌아가기"
+                        class="w-11 h-11 rounded-2xl bg-[#ede6fb] border border-purple-300 hover:scale-105 flex items-center justify-center shadow-xs shrink-0 transition cursor-pointer overflow-hidden p-0.5">
+                        <img id="headerBrandLogoImg" src="로고_2.png" alt="ABA Special Edu Lab by 신"
+                            onerror="if(!this.dataset.triedAlt){this.dataset.triedAlt='1';this.src='로고.png';}else{this.style.display='none';this.nextElementSibling.classList.remove('hidden');}"
+                            class="w-full h-full object-contain rounded-xl">
+                        <svg class="hidden w-full h-full rounded-xl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="100" height="100" rx="18" fill="#e6d9fb"/>
+                            <path d="M 22 28 A 28 24 0 0 1 78 28" fill="none" stroke="#ef7d6b" stroke-width="5" stroke-linecap="round"/>
+                            <path d="M 27 29 A 23 19 0 0 1 73 29" fill="none" stroke="#78c47b" stroke-width="4" stroke-linecap="round"/>
+                            <rect x="12" y="34" width="76" height="36" rx="10" fill="#fffdf6" stroke="#6f75d8" stroke-width="3"/>
+                            <text x="50" y="59" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="22" fill="#1e9c92">A<tspan fill="#f7b626">B</tspan><tspan fill="#f16d3b">A</tspan></text>
+                            <rect x="24" y="76" width="52" height="16" rx="8" fill="#9a86db"/>
+                            <text x="50" y="87" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="10" fill="#ffffff">by 신</text>
+                        </svg>
+                    </button>
+                    <div class="min-w-0">
+                        <h1 class="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight whitespace-nowrap">
+                            클릭 데이터 기록
+                        </h1>
+                    </div>
+                </div>
+
+                <!-- 우측 유틸리티 버튼 그룹 -->
+                <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                    <!-- 저장 상태 표시 배지 -->
+                    <span id="saveStatusBadge" class="hidden md:inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> 자동 저장 중
+                    </span>
+
+                    <!-- Google 계정 로그인/로그아웃 직관적 버튼 -->
+                    <button type="button" id="googleAuthBtn" onclick="handleGoogleAuthClick()" title="Google 계정으로 로그인하여 PC·스마트폰 실시간 연동"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-bold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 shadow-2xs transition cursor-pointer">
+                        <i class="fa-brands fa-google text-rose-500"></i>
+                        <span id="googleAuthBtnText">Google 로그인</span>
+                    </button>
+
+                    <!-- Firebase 클라우드 설정 모달 열기 버튼 -->
+                    <button type="button" onclick="openCloudConfigModal()" title="Google 로그인 연동을 위한 Firebase 설정 입력"
+                        class="inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 text-xs sm:text-sm font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-xl hover:bg-slate-200/70 transition cursor-pointer">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+
+                    <!-- QR 코드 공유 모달 버튼 -->
+                    <button type="button" onclick="openQrShareModal()" title="앱 접속 QR 코드 보기 및 이미지 저장"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-2 text-xs sm:text-sm font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-xl hover:bg-indigo-100 transition cursor-pointer">
+                        <i class="fa-solid fa-qrcode"></i>
+                        <span class="hidden md:inline">QR 공유</span>
+                    </button>
+
+                    <button type="button" onclick="showStartScreen()" title="시작 화면으로"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-2 text-xs sm:text-sm font-medium text-slate-600 bg-slate-100 border border-slate-200 rounded-xl hover:bg-slate-200/70 transition cursor-pointer">
+                        <i class="fa-solid fa-house"></i>
+                        <span class="hidden sm:inline">시작화면</span>
+                    </button>
+
+                    <!-- JSON 백업 저장 & 불러오기 버튼 추가 -->
+                    <button type="button" onclick="exportBackupJSON()" title="전체 데이터를 백업 파일(.json)로 안전하게 저장"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-2 text-xs sm:text-sm font-medium text-aba-700 bg-aba-50 border border-aba-200 rounded-xl hover:bg-aba-100 transition cursor-pointer">
+                        <i class="fa-solid fa-download"></i>
+                        <span class="hidden md:inline">백업저장</span>
+                    </button>
+
+                    <button type="button" onclick="document.getElementById('importJsonInput').click()" title="저장해둔 백업 파일(.json) 불러오기"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-2 text-xs sm:text-sm font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 rounded-xl hover:bg-indigo-100 transition cursor-pointer">
+                        <i class="fa-solid fa-upload"></i>
+                        <span class="hidden md:inline">불러오기</span>
+                    </button>
+                    <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="importBackupJSON(event)">
+
+                    <!-- 인쇄 및 PDF 저장 버튼 -->
+                    <button type="button" onclick="printOrSavePDF()" title="선그래프와 기록지를 인쇄하거나 PDF 파일로 저장"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-2xs transition cursor-pointer">
+                        <i class="fa-solid fa-print"></i>
+                        <span class="hidden sm:inline">인쇄 / PDF</span>
+                    </button>
+
+                    <button type="button" onclick="exportToCSV()" title="현재 프로그램 데이터를 CSV(엑셀)로 내보내기"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition cursor-pointer">
+                        <i class="fa-solid fa-file-csv text-emerald-600"></i>
+                        <span class="hidden xl:inline">CSV</span>
+                    </button>
+
+                    <button type="button" onclick="openResetModal()" title="데이터 초기화 또는 샘플 불러오기"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-medium text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition cursor-pointer">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span class="hidden xl:inline">초기화</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 학생 관리 탭 바 (다중 학생 전환 및 추가/삭제) -->
+        <div class="bg-indigo-950 text-white border-b border-indigo-900 no-print">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2 overflow-x-auto flex-1 py-0.5" id="studentTabsContainer">
+                    <!-- JS로 학생 탭 버튼 동적 렌더링 -->
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                    <button type="button" onclick="createNewStudent()"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-950 bg-amber-300 hover:bg-amber-200 rounded-xl shadow-xs transition cursor-pointer">
+                        <i class="fa-solid fa-user-plus"></i> 학생 추가
+                    </button>
+                    <button type="button" onclick="deleteCurrentStudent()" id="deleteStudentBtn"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-indigo-200 hover:text-rose-300 bg-indigo-900/80 hover:bg-indigo-900 border border-indigo-800 rounded-xl transition cursor-pointer"
+                        title="현재 선택된 학생 삭제">
+                        <i class="fa-solid fa-user-minus"></i> <span class="hidden sm:inline">학생 삭제</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 프로그램(영역/목표 세트) 선택 및 추가 바 -->
+        <div class="bg-slate-100 border-b border-slate-200 no-print">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2 flex-1 min-w-[240px]">
+                    <label for="programSelector" class="text-xs font-semibold text-slate-600 uppercase tracking-wider shrink-0">
+                        <i class="fa-solid fa-folder-open text-aba-600 mr-1"></i>프로그램:
+                    </label>
+                    <select id="programSelector" onchange="switchProgram(this.value)"
+                        class="flex-1 max-w-md bg-white border border-slate-300 text-slate-800 text-sm font-medium rounded-xl px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-aba-500">
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="createNewProgram()"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-aba-600 rounded-xl hover:bg-aba-700 shadow-xs transition cursor-pointer">
+                        <i class="fa-solid fa-plus"></i> 새 프로그램 추가
+                    </button>
+                    <button type="button" onclick="deleteCurrentProgram()" id="deleteProgramBtn"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-white border border-slate-300 rounded-xl hover:text-rose-600 hover:border-rose-300 transition cursor-pointer">
+                        <i class="fa-solid fa-trash-can"></i> 삭제
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 메인 콘텐츠 영역 -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+            <!-- 인쇄 / PDF 출력 시에만 상단에 나타나는 공식 보고서 헤더 -->
+            <div id="printReportHeader" class="hidden items-center justify-between border-b-2 border-slate-800 pb-3 mb-4">
+                <div>
+                    <h1 class="text-xl font-extrabold text-slate-900">ABA DTT 중재 데이터 기록지 및 수행 선그래프</h1>
+                    <p class="text-xs text-slate-500 mt-0.5">클릭으로 끝내는 데이터 기록 · 개별화교육(IEP) 중재 모니터링 보고서</p>
+                </div>
+                <div class="text-right text-xs text-slate-600">
+                    <div id="printDateText" class="font-semibold"></div>
+                    <div>20 런유닛(Learn Unit) 기준</div>
+                </div>
+            </div>
+
+            <!-- =====================================================================
+                 0. 학생 인적사항 입력 카드 (이름, 학년, 반, 장애 유형)
+                 ===================================================================== -->
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-4">
+                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                        학생 정보
+                    </h2>
+                    <span class="text-xs text-slate-400">입력 즉시 브라우저에 자동 저장됩니다</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                    <!-- 학생 이름 -->
+                    <div>
+                        <label for="inputStudentName" class="block text-xs font-semibold text-slate-700 mb-1">
+                            학생 이름
+                        </label>
+                        <input type="text" id="inputStudentName" placeholder="예: 김하늘"
+                            oninput="updateStudentInfo('name', this.value)"
+                            class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-aba-500 transition">
+                    </div>
+
+                    <!-- 학년 -->
+                    <div>
+                        <label for="inputStudentGrade" class="block text-xs font-semibold text-slate-700 mb-1">
+                            학년
+                        </label>
+                        <input type="text" id="inputStudentGrade" placeholder="예: 초등 2학년 (또는 2)"
+                            oninput="updateStudentInfo('grade', this.value)"
+                            class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-aba-500 transition">
+                    </div>
+
+                    <!-- 반 -->
+                    <div>
+                        <label for="inputStudentClass" class="block text-xs font-semibold text-slate-700 mb-1">
+                            반
+                        </label>
+                        <input type="text" id="inputStudentClass" placeholder="예: 3반 (또는 사랑반)"
+                            oninput="updateStudentInfo('className', this.value)"
+                            class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-aba-500 transition">
+                    </div>
+
+                    <!-- 장애 유형 -->
+                    <div>
+                        <label for="inputStudentDisability" class="block text-xs font-semibold text-slate-700 mb-1">
+                            장애 유형
+                        </label>
+                        <input type="text" id="inputStudentDisability" list="disabilityPresets" placeholder="예: 자폐성장애, 지적장애 등"
+                            oninput="updateStudentInfo('disability', this.value)"
+                            class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-aba-500 transition">
+                        <datalist id="disabilityPresets">
+                            <option value="자폐성장애">
+                            <option value="지적장애">
+                            <option value="발달지연">
+                            <option value="의사소통장애">
+                            <option value="정서·행동장애">
+                            <option value="학습장애">
+                        </datalist>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================================
+                 1. 프로그램 기본 정보 설정 카드
+                 ===================================================================== -->
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-aba-100 text-aba-700 flex items-center justify-center text-xs font-bold">1</span>
+                        프로그램 기본 정보 설정
+                    </h2>
+                    <span class="text-xs text-slate-400">순서대로 입력</span>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="space-y-3.5">
+                        <!-- 1. 영역 (Domain) -->
+                        <div>
+                            <label for="inputDomain" class="block text-xs font-semibold text-slate-700 mb-1">
+                                1. 영역 (Domain)
+                            </label>
+                            <input type="text" id="inputDomain" placeholder="예: 수용언어, 표현언어, 시지각 변별, 모방 등"
+                                oninput="updateProgramMeta('domain', this.value)"
+                                class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-aba-500 transition">
+                        </div>
+
+                        <!-- 2. 장기목표(LTO) -->
+                        <div>
+                            <label for="inputLTO" class="block text-xs font-semibold text-slate-700 mb-1">
+                                2. 장기목표(LTO)
+                            </label>
+                            <textarea id="inputLTO" rows="2" placeholder="예: 3가지 이상의 사물 범주(동물, 과일, 탈것)를 변별하여 지시대로 가리킬 수 있다."
+                                oninput="updateProgramMeta('lto', this.value)"
+                                class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-aba-500 transition resize-none"></textarea>
+                        </div>
+
+                        <!-- 3. 단기목표(STO) 무제한 추가/삭제 + 현재 진행 중인 STO 선택 -->
+                        <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2.5">
+                            <div class="flex flex-wrap items-center justify-between gap-1.5">
+                                <label class="block text-xs font-bold text-slate-800">
+                                    3. 단기목표(STO) <span class="font-normal text-slate-500">- 진행 목표 선택 및 추가</span>
+                                </label>
+                                <div class="flex items-center gap-1.5">
+                                    <span id="activeStoBadge" class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-aba-600 text-white">
+                                        현재 STO 1 진행 중
+                                    </span>
+                                    <button type="button" onclick="addSTO()"
+                                        class="text-[11px] font-bold px-2.5 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white transition flex items-center gap-1 cursor-pointer shadow-2xs">
+                                        <i class="fa-solid fa-plus"></i> STO 추가
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 동적 STO 리스트 컨테이너 -->
+                            <div id="stoInputsList" class="space-y-2 max-h-60 overflow-y-auto pr-0.5">
+                                <!-- JS로 STO 입력 행 동적 렌더링 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3.5 flex flex-col justify-between">
+                        <div class="space-y-3.5">
+                            <!-- 4. 지시어 (S^D) -->
+                            <div>
+                                <label for="inputSD" class="block text-xs font-semibold text-slate-700 mb-1">
+                                    4. 지시어(S<sup class="text-[10px] font-bold">D</sup>)
+                                </label>
+                                <input type="text" id="inputSD" placeholder='예: "[사물명] 줘" 또는 "[사물명] 만져"'
+                                    oninput="updateProgramMeta('sd', this.value)"
+                                    class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-aba-500 transition">
+                            </div>
+
+                            <!-- 5. 촉구방법 (Prompting Procedure) -->
+                            <div>
+                                <label for="inputPrompt" class="block text-xs font-semibold text-slate-700 mb-1">
+                                    5. 촉구방법 (Prompting Procedure)
+                                </label>
+                                <input type="text" id="inputPrompt" placeholder="예: 최소-최대 촉구(LTM), 시선/포인팅 촉구, 시간지연(3초)"
+                                    oninput="updateProgramMeta('prompt', this.value)"
+                                    class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-aba-500 transition">
+                            </div>
+
+                            <!-- 6. 지시법 / 강화비율 -->
+                            <div>
+                                <label for="inputReinforcement" class="block text-xs font-semibold text-slate-700 mb-1">
+                                    6. 지시법 / 강화비율 (Teaching Method / Reinforcement)
+                                </label>
+                                <input type="text" id="inputReinforcement" placeholder="예: 무오류학습(Errorless) / 정반응 시 즉각 칭찬 및 토큰 강화(FR1)"
+                                    oninput="updateProgramMeta('reinforcement', this.value)"
+                                    class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-aba-500 transition">
+                            </div>
+                        </div>
+
+                        <!-- 완료 기준 안내 박스 (명시) -->
+                        <div class="bg-emerald-50/90 border border-emerald-200 rounded-xl p-3 space-y-1">
+                            <div class="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+                                <i class="fa-solid fa-award text-emerald-600"></i>
+                                <span>단기목표(STO) 완료 기준</span>
+                            </div>
+                            <p class="text-xs text-emerald-900 leading-relaxed">
+                                런유닛 20시도 중 <strong>90%(18번 이상 +) 1회</strong> 또는 <strong>20시도 중 80%(16번 이상 +) 연속 2회</strong> 보이면 다음 단기 학습목표로 넘어간다.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- =====================================================================
+                 2. 날짜별 20 런유닛(Learn Unit) 클릭 기록 영역
+                 ===================================================================== -->
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4">
+                <!-- 섹션 헤더 & 새 회기 추가 컨트롤 -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-aba-100 text-aba-700 flex items-center justify-center text-xs font-bold">2</span>
+                            날짜별 회기 기록 (20 런유닛 = 1회기)
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1 ml-8 no-print">
+                            각 시도(1~20)마다 <span class="font-bold text-emerald-600">+ (정반응)</span>,
+                            <span class="font-bold text-rose-600">- (오반응)</span>,
+                            <span class="font-bold text-amber-600">P (촉구반응)</span> 버튼을 클릭하세요. (같은 버튼 재클릭 시 해제)
+                        </p>
+                    </div>
+
+                    <!-- 새 날짜(회기) 추가 폼 -->
+                    <div class="no-print flex flex-wrap items-center gap-2 self-start sm:self-auto bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                        <div class="flex items-center gap-1 pr-1 border-r border-slate-200">
+                            <button type="button" onclick="toggleAllSessions(false)" title="모든 회기 접기"
+                                class="px-2 py-1 text-[11px] font-semibold text-slate-600 hover:text-slate-900 hover:bg-white rounded-lg transition cursor-pointer">
+                                모두 접기
+                            </button>
+                            <button type="button" onclick="toggleAllSessions(true)" title="모든 회기 펼치기"
+                                class="px-2 py-1 text-[11px] font-semibold text-slate-600 hover:text-slate-900 hover:bg-white rounded-lg transition cursor-pointer">
+                                모두 펼치기
+                            </button>
+                        </div>
+                        <input type="date" id="newSessionDate"
+                            class="bg-white border border-slate-300 text-slate-800 text-xs sm:text-sm font-medium rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-aba-500">
+                        <button type="button" onclick="addSession()"
+                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-semibold text-white bg-aba-600 rounded-lg hover:bg-aba-700 active:scale-95 shadow-xs transition shrink-0 cursor-pointer">
+                            <i class="fa-solid fa-calendar-plus"></i> <span id="addSessionBtnText">STO 1 회기 추가</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STO 단계 전환 빠른 탭 바 (동적 무제한 STO 지원) -->
+                <div id="stoTabsBar" class="no-print flex items-center gap-2 overflow-x-auto pb-1">
+                    <!-- JS로 STO 탭 버튼 동적 렌더링 -->
+                </div>
+
+                <!-- 현재 선택된 STO의 달성 상태 배너 -->
+                <div id="stoMasteryBanner" class="hidden rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+                    <!-- JS로 달성 축하 및 다음 STO 이동 버튼 렌더링 -->
+                </div>
+
+                <!-- 회기 카드 리스트 컨테이너 -->
+                <div id="sessionsContainer" class="space-y-4">
+                    <!-- JavaScript로 회기 카드가 동적 렌더링됨 -->
+                </div>
+            </section>
+
+            <!-- =====================================================================
+                 3. 선 그래프 카드
+                 ===================================================================== -->
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 flex flex-col justify-between">
+                <div>
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 mb-3">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                                <span class="w-6 h-6 rounded-lg bg-aba-100 text-aba-700 flex items-center justify-center text-xs font-bold">3</span>
+                                선 그래프
+                            </h2>
+                            <p id="chartSubtitle" class="text-xs text-slate-500 mt-0.5 ml-8">
+                                Y축: 런유닛 정반응(0~20) · X축: 회기(0, 1, 2, 3...) · STO 완료 시 회기 사이에 세로 점선 구분
+                            </p>
+                        </div>
+
+                        <!-- ABA 표준 범례 안내 -->
+                        <div class="flex items-center gap-3.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium">
+                            <div class="flex items-center gap-1.5">
+                                <span class="inline-block w-3 h-3 rounded-full bg-slate-900"></span>
+                                <span class="inline-block w-4 h-0.5 bg-slate-900 -ml-1"></span>
+                                <span class="text-slate-800 font-semibold">정반응(+)</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="inline-block w-3 h-3 rounded-full bg-white border-2 border-slate-900"></span>
+                                <span class="inline-block w-4 border-t-2 border-dashed border-slate-700 -ml-1"></span>
+                                <span class="text-slate-700 font-semibold">촉구반응(P)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 정사각형 격자 선그래프 스크롤/컨테이너 -->
+                    <div id="graphOuterWrapper" class="w-full overflow-x-auto bg-white rounded-xl border border-slate-200 p-2">
+                        <canvas id="abaGridCanvas" class="block mx-auto"></canvas>
+                    </div>
+                </div>
+
+                <!-- 그래프 하단 요약 통계 바 -->
+                <div class="grid grid-cols-3 gap-3 mt-4 pt-3 border-t border-slate-100">
+                    <div class="bg-slate-50 rounded-xl p-2.5 text-center border border-slate-200/70">
+                        <div class="text-[11px] font-medium text-slate-500">전체 누적 회기</div>
+                        <div id="statTotalSessions" class="text-sm sm:text-base font-bold text-slate-900 mt-0.5">0회기</div>
+                    </div>
+                    <div class="bg-emerald-50/70 rounded-xl p-2.5 text-center border border-emerald-200/70">
+                        <div class="text-[11px] font-medium text-emerald-700">최근 회기 정반응(+)</div>
+                        <div id="statLatestCorrect" class="text-sm sm:text-base font-bold text-emerald-700 mt-0.5">- / 20 (0%)</div>
+                    </div>
+                    <div class="bg-amber-50/70 rounded-xl p-2.5 text-center border border-amber-200/70">
+                        <div class="text-[11px] font-medium text-amber-700">최근 회기 촉구(P)</div>
+                        <div id="statLatestPrompt" class="text-sm sm:text-base font-bold text-amber-700 mt-0.5">- / 20 (0%)</div>
+                    </div>
+                </div>
+
+                <!-- 그래프 하단 완료 기준 안내 -->
+                <div class="mt-3 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] text-slate-600 flex items-center gap-2">
+                    <span class="px-1.5 py-0.5 rounded bg-emerald-600 text-white font-bold shrink-0">완료 기준</span>
+                    <span>20시도 중 <strong>90%(18회 이상 +) 1회</strong> 또는 <strong>80%(16회 이상 +) 연속 2회</strong> 달성 시 해당 회기와 다음 회기 사이에 세로 점선 및 <strong class="text-emerald-700">[완료]</strong> 표시</span>
+                </div>
+            </section>
+
+            <!-- =====================================================================
+                 4. 목표 완료 목록 (장기목표별 클릭 시 단기목표 완료·미완료 현황 펼침)
+                 ===================================================================== -->
+            <section class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-4 no-print">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3.5">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">4</span>
+                            <span id="stoSummarySectionTitle">목표 완료 목록</span>
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-0.5 ml-8">
+                            장기목표(LTO)를 클릭하면 해당 장기목표에 속한 단기목표(STO)의 완료·미완료 현황을 간결하게 확인할 수 있습니다.
+                        </p>
+                    </div>
+
+                    <!-- 필터 탭 버튼 그룹: 전체 / 완료 목록 / 미완료 목록 -->
+                    <div class="inline-flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 self-start sm:self-auto shrink-0">
+                        <button type="button" id="stoFilterTabAll" onclick="setStoSummaryFilter('all')"
+                            class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-white text-slate-900 shadow-2xs">
+                            <span>전체</span>
+                            <span id="stoCountBadgeAll" class="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 text-slate-700">0</span>
+                        </button>
+                        <button type="button" id="stoFilterTabCompleted" onclick="setStoSummaryFilter('completed')"
+                            class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer text-slate-600 hover:text-emerald-700">
+                            <i class="fa-solid fa-circle-check text-emerald-600"></i>
+                            <span>완료</span>
+                            <span id="stoCountBadgeCompleted" class="px-1.5 py-0.2 rounded-full text-[10px] bg-emerald-100 text-emerald-700">0</span>
+                        </button>
+                        <button type="button" id="stoFilterTabIncomplete" onclick="setStoSummaryFilter('incomplete')"
+                            class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer text-slate-600 hover:text-amber-700">
+                            <i class="fa-solid fa-hourglass-half text-amber-500"></i>
+                            <span>미완료</span>
+                            <span id="stoCountBadgeIncomplete" class="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 text-amber-700">0</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 장기목표(LTO)별 아코디언 목록 -->
+                <div id="studentStoSummaryList" class="space-y-2.5">
+                    <!-- JS로 동적 렌더링 -->
+                </div>
+            </section>
+
+        </main>
+
+        <!-- 푸터 -->
+        <footer class="bg-white border-t border-slate-200 py-5 mt-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-xl bg-[#ede6fb] border border-purple-300 flex items-center justify-center shrink-0 overflow-hidden p-0.5 shadow-2xs">
+                        <img id="footerBrandLogoImg" src="로고_2.png" alt="ABA Special Edu Lab by 신"
+                            onerror="if(!this.dataset.triedAlt){this.dataset.triedAlt='1';this.src='로고.png';}else{this.style.display='none';this.nextElementSibling.classList.remove('hidden');}"
+                            class="w-full h-full object-contain rounded-lg">
+                        <svg class="hidden w-full h-full rounded-lg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="100" height="100" rx="16" fill="#e6d9fb"/>
+                            <path d="M 22 28 A 28 24 0 0 1 78 28" fill="none" stroke="#ef7d6b" stroke-width="5" stroke-linecap="round"/>
+                            <rect x="12" y="34" width="76" height="36" rx="10" fill="#fffdf6" stroke="#6f75d8" stroke-width="3"/>
+                            <text x="50" y="59" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="22" fill="#1e9c92">A<tspan fill="#f7b626">B</tspan><tspan fill="#f16d3b">A</tspan></text>
+                            <rect x="24" y="76" width="52" height="16" rx="8" fill="#9a86db"/>
+                            <text x="50" y="87" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="10" fill="#ffffff">by 신</text>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-800">ABA Special Edu Lab <span class="text-purple-700">by 신</span> · 클릭으로 끝내는 데이터 기록</div>
+                        <div class="text-[11px] text-slate-500">ABA 기반의 특수교육 지원 플랫폼 · 개별 시도 교수(Discrete Trial Training: DTT) 중재 데이터 관리 앱</div>
+                    </div>
+                </div>
+                <div id="footerSyncInfo" class="text-right">
+                    모든 입력과 클릭은 실시간 자동 저장되며, Google 로그인 시 기기 간 자동 동기화됩니다.
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 커스텀 알림 토스트 (alert 대체) -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- 커스텀 확인 모달 (confirm 대체) -->
+    <div id="confirmModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 fade-animate space-y-4">
+            <div class="flex items-start gap-3">
+                <div id="modalIconBg" class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                    <i id="modalIcon" class="fa-solid fa-triangle-exclamation text-lg"></i>
+                </div>
+                <div>
+                    <h3 id="modalTitle" class="text-base font-bold text-slate-900">확인</h3>
+                    <p id="modalMessage" class="text-sm text-slate-600 mt-1 leading-relaxed"></p>
+                </div>
+            </div>
+            <div id="modalExtraActions" class="flex flex-wrap items-center justify-end gap-2 pt-2">
+                <!-- 동적 버튼 삽입 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Google 로그인(Firebase) 연동 설정 모달 -->
+    <div id="cloudConfigModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200 fade-animate space-y-4">
+            <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-blue-100 text-aba-600 flex items-center justify-center">
+                        <i class="fa-brands fa-google text-base"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900">Google 로그인 실시간 동기화 설정</h3>
+                        <p class="text-xs text-slate-500">Firebase 프로젝트의 웹 앱 설정값(firebaseConfig)을 입력하세요</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeCloudConfigModal()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="bg-blue-50/80 border border-blue-200/80 rounded-xl p-3 text-xs text-slate-700 space-y-1 leading-relaxed">
+                <div class="font-bold text-aba-800"><i class="fa-solid fa-shield-halved mr-1"></i>개인정보 보호 및 연동 안내</div>
+                <p>• 로그인한 <strong>본인의 Google 계정 고유 공간</strong>에만 데이터가 저장되므로 다른 사용자는 절대 볼 수 없습니다.</p>
+                <p>• Firebase 콘솔에서 복사한 <code class="bg-white px-1 py-0.5 rounded border">const firebaseConfig = { ... };</code> 전체 또는 JSON을 아래에 붙여넣으세요.</p>
+            </div>
+
+            <div>
+                <label for="firebaseConfigTextarea" class="block text-xs font-bold text-slate-700 mb-1.5">
+                    Firebase 설정 코드 붙여넣기
+                </label>
+                <textarea id="firebaseConfigTextarea" rows="6"
+                    placeholder='const firebaseConfig = {&#10;  apiKey: "AIzaSy...",&#10;  authDomain: "your-app.firebaseapp.com",&#10;  projectId: "your-app",&#10;  storageBucket: "...",&#10;  messagingSenderId: "...",&#10;  appId: "..."&#10;};'
+                    class="w-full p-3 text-xs font-mono bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-aba-500"></textarea>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+                <button type="button" onclick="clearSavedFirebaseConfig()"
+                    class="px-3 py-2 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl cursor-pointer">
+                    연동 해제(초기화)
+                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="closeCloudConfigModal()"
+                        class="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl cursor-pointer">
+                        취소
+                    </button>
+                    <button type="button" onclick="saveFirebaseConfigFromModal()"
+                        class="px-4 py-2 text-xs font-bold text-white bg-aba-600 hover:bg-aba-700 rounded-xl shadow-xs cursor-pointer">
+                        저장 및 연결하기
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 앱 접속 QR 코드 공유 모달 -->
+    <div id="qrShareModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200 fade-animate space-y-4 text-center">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2 text-left">
+                    <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm sm:text-base font-bold text-slate-900">QR 코드로 바로 접속</h3>
+                        <p class="text-[11px] text-slate-500">스마트폰 카메라로 스캔하면 앱이 열립니다</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeQrShareModal()" class="text-slate-400 hover:text-slate-600 p-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- QR 코드 이미지 컨테이너 -->
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center space-y-2.5">
+                <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
+                    <img id="qrCodePreviewImg" src="" alt="클릭으로 끝내는 데이터 기록 접속 QR 코드" class="w-48 h-48 object-contain block mx-auto">
+                </div>
+                <div class="text-[11px] font-semibold text-slate-600 break-all bg-white px-2.5 py-1 rounded-lg border border-slate-200 w-full" id="qrTargetUrlText">
+                    https://aba-dtt-tracker.vercel.app
+                </div>
+            </div>
+
+            <!-- 링크 복사 및 QR 이미지 다운로드 버튼 -->
+            <div class="grid grid-cols-2 gap-2 pt-1">
+                <button type="button" onclick="copyShareAppUrl()"
+                    class="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-link"></i>
+                    <span>링크 복사</span>
+                </button>
+                <button type="button" onclick="downloadQrCodePng()"
+                    class="py-2.5 px-3 rounded-xl bg-aba-600 hover:bg-aba-700 text-white text-xs font-bold shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-download"></i>
+                    <span>QR 이미지 저장</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 모듈 스크립트 로드 전에도 즉시 동작하는 전역 로고 업로드 핸들러
+        window.handleCustomLogoUpload = function(event) {
+            const file = event.target && event.target.files ? event.target.files[0] : null;
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                try {
+                    localStorage.setItem('aba_custom_brand_logo_v1', dataUrl);
+                } catch (err) {
+                    console.warn('로고 로컬 저장 용량 초과:', err);
+                }
+                const startSvg = document.getElementById('startBrandLogoSvg');
+                if (startSvg) startSvg.classList.add('hidden');
+                ['startBrandLogoImg', 'headerBrandLogoImg', 'footerBrandLogoImg'].forEach(function(imgId) {
+                    const imgEl = document.getElementById(imgId);
+                    if (imgEl) {
+                        imgEl.onerror = null;
+                        imgEl.src = dataUrl;
+                        imgEl.classList.remove('hidden');
+                        imgEl.style.display = 'block';
+                        if (imgEl.nextElementSibling) imgEl.nextElementSibling.classList.add('hidden');
+                    }
+                });
+                event.target.value = '';
+                if (typeof window.showToast === 'function') {
+                    window.showToast('원본 로고 이미지가 즉시 적용되었습니다! [Netlify용 index.html] 저장 시에도 함께 포함됩니다.', 'success');
+                }
+            };
+            reader.readAsDataURL(file);
+        };
+    </script>
+
+    <script type="module">
+        import { initializeApp, getApps, deleteApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+            getAuth,
+            signInAnonymously,
+            signInWithCustomToken,
+            GoogleAuthProvider,
+            signInWithPopup,
+            signOut,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 상수 및 전역 앱 상태 초기화
+        const TRIAL_COUNT = 20;
+        let appState = null;
+        let stoSummaryFilter = 'all'; // 'all' | 'completed' | 'incomplete'
+        let expandedLtoProgramIds = new Set(); // 펼쳐진 장기목표(프로그램) ID 목록
+        let expandedSessionIds = new Set(); // 펼쳐진 회기 카드 ID 목록
+        let initializedSessionIds = new Set(); // 최초 로드 시 자동 펼침 여부 추적용
+        // 환경 변수 또는 사용자 저장 Firebase 설정 로드
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'aba-dtt-tracker-prod';
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        function resolveFirebaseConfig() {
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                try {
+                    return JSON.parse(__firebase_config);
+                } catch (e) {
+                    console.warn('기본 환경 설정 파싱 오류:', e);
+                }
+            }
+            // Netlify 배포 파일에 내장된 설정 확인
+            const embeddedCfg = document.getElementById('embeddedFirebaseConfig');
+            if (embeddedCfg && embeddedCfg.textContent.trim()) {
+                try {
+                    return JSON.parse(embeddedCfg.textContent.trim());
+                } catch (e) {
+                    console.warn('내장 Firebase 설정 파싱 오류:', e);
+                }
+            }
+            // 브라우저 LocalStorage에 저장된 사용자 Firebase 설정 확인
+            try {
+                const storedCfg = localStorage.getItem('aba_custom_firebase_config');
+                if (storedCfg) {
+                    return JSON.parse(storedCfg);
+                }
+            } catch (e) {
+                console.warn('저장된 Firebase 설정 읽기 오류:', e);
+            }
+            // 기본 내장 Firebase 프로젝트 설정 (선생님 전용 프로젝트 합체 완료)
+            return {
+                apiKey: "AIzaSyDv-ewHmCDkHu8xgYcRef_TKgxsbD9OPG8",
+                authDomain: "aba-dtt-app.firebaseapp.com",
+                projectId: "aba-dtt-app",
+                storageBucket: "aba-dtt-app.firebasestorage.app",
+                messagingSenderId: "1052604251537",
+                appId: "1:1052604251537:web:4bee5d98c234ac0ead6e30"
+            };
+        }
+
+        let fbApp = null;
+        let fbAuth = null;
+        let fbDb = null;
+        let currentUser = null;
+        let unsubscribeCloud = null;
+        let activeFirebaseConfig = resolveFirebaseConfig();
+
+        function updateAuthUI(user) {
+            const startTitle = document.getElementById('startAuthStatusTitle');
+            const startDesc = document.getElementById('startAuthStatusDesc');
+            const startBtnText = document.getElementById('startGoogleAuthBtnText');
+            const headerBtnText = document.getElementById('googleAuthBtnText');
+            const saveBadge = document.getElementById('saveStatusBadge');
+            const step1Badge = document.getElementById('startStep1Badge');
+            const step1Circle = document.getElementById('step1CircleNum');
+            const step2Circle = document.getElementById('step2CircleNum');
+            const mainStartBtn = document.getElementById('mainStartBtn');
+
+            if (user && !user.isAnonymous) {
+                const displayLabel = user.displayName || user.email || 'Google 계정';
+                if (startTitle) startTitle.textContent = `${displayLabel} 로그인 완료`;
+                if (startDesc) startDesc.textContent = '클라우드 실시간 동기화가 활성화되었습니다. 아래 2단계 버튼을 눌러 시작하세요.';
+                if (startBtnText) startBtnText.textContent = `로그아웃 (${displayLabel})`;
+                if (headerBtnText) headerBtnText.textContent = displayLabel;
+                if (saveBadge) {
+                    saveBadge.innerHTML = '<i class="fa-solid fa-cloud-check"></i> Google 클라우드 동기화됨';
+                }
+                if (step1Badge) {
+                    step1Badge.textContent = '1단계 · 완료';
+                    step1Badge.className = 'px-2 py-0.5 rounded-md bg-emerald-600 text-white text-[10px] font-extrabold';
+                }
+                if (step1Circle) {
+                    step1Circle.innerHTML = '<i class="fa-solid fa-check"></i>';
+                    step1Circle.className = 'w-8 h-8 rounded-full bg-emerald-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow-xs';
+                }
+                if (step2Circle) {
+                    step2Circle.className = 'w-8 h-8 rounded-full bg-aba-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 transition-colors';
+                }
+                if (mainStartBtn) {
+                    mainStartBtn.className = 'group w-full py-4 px-6 rounded-xl bg-aba-600 hover:bg-aba-700 active:scale-[0.99] text-white font-extrabold text-base sm:text-lg shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer';
+                }
+            } else {
+                if (startTitle) startTitle.textContent = 'Google 계정으로 로그인';
+                if (startDesc) startDesc.textContent = '로그인하면 PC·스마트폰에 저장된 내 학생 기록이 자동으로 불러와집니다.';
+                if (startBtnText) startBtnText.textContent = '1. Google 로그인하기';
+                if (headerBtnText) headerBtnText.textContent = 'Google 로그인';
+                if (saveBadge) {
+                    saveBadge.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> 기기 로컬 자동 저장';
+                }
+                if (step1Badge) {
+                    step1Badge.textContent = '1단계 · 필수 권장';
+                    step1Badge.className = 'px-2 py-0.5 rounded-md bg-aba-600 text-white text-[10px] font-extrabold';
+                }
+                if (step1Circle) {
+                    step1Circle.textContent = '1';
+                    step1Circle.className = 'w-8 h-8 rounded-full bg-aba-600 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow-xs';
+                }
+                if (step2Circle) {
+                    step2Circle.className = 'w-8 h-8 rounded-full bg-slate-400 text-white font-extrabold text-sm flex items-center justify-center shrink-0 transition-colors';
+                }
+                if (mainStartBtn) {
+                    mainStartBtn.className = 'group w-full py-4 px-6 rounded-xl bg-slate-700 hover:bg-slate-800 active:scale-[0.99] text-white font-extrabold text-base sm:text-lg shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer';
+                }
+            }
+        }
+
+        function subscribeUserCloudDoc(uid) {
+            if (!fbDb || !uid) return;
+            if (unsubscribeCloud) {
+                unsubscribeCloud();
+                unsubscribeCloud = null;
+            }
+            const userDocRef = doc(fbDb, 'artifacts', appId, 'users', uid, 'abaData', 'mainState');
+            unsubscribeCloud = onSnapshot(userDocRef, (snap) => {
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (data && data.payload) {
+                        try {
+                            const parsed = typeof data.payload === 'string' ? JSON.parse(data.payload) : data.payload;
+                            appState = normalizeAppState(parsed);
+                            localStorage.setItem('aba_dtt_tracker_v2', JSON.stringify(appState));
+                            updateStartScreenPreview();
+                            const mainApp = document.getElementById('mainAppContainer');
+                            if (mainApp && !mainApp.classList.contains('hidden')) {
+                                renderAll();
+                            }
+                        } catch (e) {
+                            console.warn('클라우드 데이터 파싱 오류:', e);
+                        }
+                    }
+                } else if (appState) {
+                    pushStateToCloud(appState);
+                }
+            }, (err) => {
+                console.warn('Firestore 실시간 구독 오류:', err);
+            });
+        }
+
+        window.pushStateToCloud = async function(stateObj) {
+            try {
+                localStorage.setItem('aba_dtt_tracker_v2', JSON.stringify(stateObj));
+            } catch (e) {}
+            if (fbDb && currentUser && !currentUser.isAnonymous) {
+                try {
+                    const userDocRef = doc(fbDb, 'artifacts', appId, 'users', currentUser.uid, 'abaData', 'mainState');
+                    await setDoc(userDocRef, {
+                        payload: JSON.stringify(stateObj),
+                        updatedAt: Date.now()
+                    }, { merge: true });
+                } catch (e) {
+                    console.warn('클라우드 저장 오류:', e);
+                }
+            }
+        };
+
+        async function initCloudSync() {
+            activeFirebaseConfig = resolveFirebaseConfig();
+            if (!activeFirebaseConfig || !activeFirebaseConfig.apiKey) {
+                updateAuthUI(null);
+                return;
+            }
+            try {
+                const existingApps = getApps();
+                if (existingApps.length > 0) {
+                    fbApp = existingApps[0];
+                } else {
+                    fbApp = initializeApp(activeFirebaseConfig);
+                }
+                fbAuth = getAuth(fbApp);
+                fbDb = getFirestore(fbApp);
+
+                if (initialAuthToken) {
+                    try {
+                        await signInWithCustomToken(fbAuth, initialAuthToken);
+                    } catch (e) {}
+                }
+
+                onAuthStateChanged(fbAuth, (user) => {
+                    currentUser = user;
+                    updateAuthUI(user);
+                    if (user && !user.isAnonymous) {
+                        subscribeUserCloudDoc(user.uid);
+                    } else if (unsubscribeCloud) {
+                        unsubscribeCloud();
+                        unsubscribeCloud = null;
+                    }
+                });
+            } catch (err) {
+                console.warn('Firebase 초기화 실패:', err);
+                updateAuthUI(null);
+            }
+        }
+
+        async function handleGoogleAuthClick() {
+            if (!fbAuth) {
+                await initCloudSync();
+            }
+            if (!fbAuth) {
+                showToast('Firebase 서버 설정을 먼저 확인해 주세요.', 'error');
+                openCloudConfigModal();
+                return;
+            }
+            if (currentUser && !currentUser.isAnonymous) {
+                openCustomModal({
+                    title: 'Google 계정 로그아웃',
+                    message: `현재 로그인된 계정(${currentUser.email || currentUser.displayName || 'Google 계정'})에서 로그아웃하시겠습니까?`,
+                    buttons: [
+                        { label: '취소', className: 'px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 cursor-pointer', onClick: closeConfirmModal },
+                        {
+                            label: '로그아웃',
+                            className: 'px-4 py-2 text-xs font-bold text-white bg-rose-600 rounded-xl hover:bg-rose-700 cursor-pointer',
+                            onClick: async () => {
+                                await signOut(fbAuth);
+                                closeConfirmModal();
+                                showToast('로그아웃되었습니다.', 'info');
+                            }
+                        }
+                    ]
+                });
+                return;
+            }
+
+            try {
+                const provider = new GoogleAuthProvider();
+                provider.setCustomParameters({ prompt: 'select_account' });
+                const result = await signInWithPopup(fbAuth, provider);
+                if (result && result.user) {
+                    showToast(`${result.user.displayName || result.user.email}님, 환영합니다!`, 'success');
+                }
+            } catch (err) {
+                console.error('Google 로그인 오류:', err);
+                if (err.code === 'auth/unauthorized-domain') {
+                    const currentHost = window.location.hostname || window.location.origin;
+                    openCustomModal({
+                        title: 'Firebase 승인된 도메인 등록 필요',
+                        message: `현재 접속 주소(${currentHost})가 Firebase 보안 목록에 아직 등록되지 않았습니다.\n\n1. 아래 [현재 주소 복사] 버튼 클릭\n2. Firebase 콘솔 → [Authentication] → [설정] → [승인된 도메인] → [도메인 추가]에 붙여넣기`,
+                        buttons: [
+                            {
+                                label: `현재 주소(${currentHost}) 복사`,
+                                className: 'px-4 py-2 text-xs font-bold text-white bg-aba-600 rounded-xl hover:bg-aba-700 cursor-pointer',
+                                onClick: () => {
+                                    const tmp = document.createElement('textarea');
+                                    tmp.value = currentHost;
+                                    document.body.appendChild(tmp);
+                                    tmp.select();
+                                    document.execCommand('copy');
+                                    document.body.removeChild(tmp);
+                                    showToast(`도메인(${currentHost})이 클립보드에 복사되었습니다!`, 'success');
+                                }
+                            },
+                            { label: '닫기', className: 'px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 cursor-pointer', onClick: closeConfirmModal }
+                        ]
+                    });
+                    const msgEl = document.getElementById('modalMessage');
+                    if (msgEl) msgEl.style.whiteSpace = 'pre-line';
+                } else if (err.code !== 'auth/popup-closed-by-user') {
+                    showToast(`로그인 오류: ${err.message || err.code}`, 'error');
+                }
+            }
+        }
+
+        function openCloudConfigModal() {
+            const modal = document.getElementById('cloudConfigModal');
+            const textarea = document.getElementById('firebaseConfigTextarea');
+            if (textarea && activeFirebaseConfig) {
+                textarea.value = 'const firebaseConfig = ' + JSON.stringify(activeFirebaseConfig, null, 2) + ';';
+            }
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeCloudConfigModal() {
+            const modal = document.getElementById('cloudConfigModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        async function saveFirebaseConfigFromModal() {
+            const textarea = document.getElementById('firebaseConfigTextarea');
+            const raw = (textarea?.value || '').trim();
+            if (!raw) {
+                showToast('Firebase 설정 코드를 입력해 주세요.', 'error');
+                return;
+            }
+            try {
+                const startBrace = raw.indexOf('{');
+                const endBrace = raw.lastIndexOf('}');
+                if (startBrace === -1 || endBrace === -1) throw new Error('올바른 객체 형식이 아닙니다.');
+                const objLiteral = raw.slice(startBrace, endBrace + 1);
+                const parsed = Function('"use strict"; return (' + objLiteral + ');')();
+                if (!parsed || !parsed.apiKey) throw new Error('apiKey 항목이 없습니다.');
+
+                localStorage.setItem('aba_custom_firebase_config', JSON.stringify(parsed));
+                activeFirebaseConfig = parsed;
+
+                const apps = getApps();
+                for (const a of apps) {
+                    await deleteApp(a);
+                }
+                fbApp = null;
+                fbAuth = null;
+                fbDb = null;
+                await initCloudSync();
+                closeCloudConfigModal();
+                showToast('Firebase 설정이 저장되고 연결되었습니다!', 'success');
+            } catch (e) {
+                showToast('설정 코드 형식을 확인해 주세요: ' + e.message, 'error');
+            }
+        }
+
+        function clearSavedFirebaseConfig() {
+            localStorage.removeItem('aba_custom_firebase_config');
+            closeCloudConfigModal();
+            showToast('사용자 지정 Firebase 설정이 초기화되었습니다.', 'info');
+        }
+
+        function createEmptyProgram(index = 1) {
+            return {
+                id: 'prog_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                domain: `프로그램 ${index}`,
+                lto: '',
+                stos: ['', '', ''],
+                activeStoIndex: 0,
+                sd: '',
+                prompt: '',
+                reinforcement: '',
+                sessionsBySto: { 0: [], 1: [], 2: [] }
+            };
+        }
+
+        function createEmptyStudent(index = 1, withSample = false) {
+            const prog = createEmptyProgram(1);
+            if (withSample) {
+                prog.domain = '수용언어 (사물 범주 변별)';
+                prog.lto = '3가지 이상의 사물 범주(동물, 과일, 탈것)를 변별하여 지시대로 가리킬 수 있다.';
+                prog.stos = [
+                    '동물 그림카드 3종(강아지, 고양이, 토끼)을 90% 이상 정반응으로 가리킨다.',
+                    '과일 그림카드 3종(사과, 바나나, 포도)을 90% 이상 정반응으로 가리킨다.',
+                    '탈것 그림카드 3종(자동차, 비행기, 배)을 90% 이상 정반응으로 가리킨다.'
+                ];
+                prog.sd = '"[사물명] 만져" 또는 "[사물명] 줘"';
+                prog.prompt = '최소-최대 촉구(LTM) / 포인팅 촉구';
+                prog.reinforcement = '무오류학습 / 정반응 시 즉각 칭찬 및 토큰 강화(FR1)';
+            } else {
+                prog.domain = '새 프로그램 1';
+            }
+
+            return {
+                id: 'stu_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                name: withSample ? '' : `학생 ${index}`,
+                grade: '',
+                className: '',
+                disability: '',
+                currentProgramId: prog.id,
+                programs: [prog]
+            };
+        }
+
+        function createInitialDefaultState() {
+            const firstStudent = createEmptyStudent(1, true);
+            return {
+                currentStudentId: firstStudent.id,
+                students: [firstStudent]
+            };
+        }
+
+        function normalizeAppState(raw) {
+            if (!raw || !Array.isArray(raw.students) || raw.students.length === 0) {
+                return createInitialDefaultState();
+            }
+            raw.students.forEach((stu, sIdx) => {
+                if (!stu.id) stu.id = 'stu_' + Date.now() + '_' + sIdx;
+                if (!Array.isArray(stu.programs) || stu.programs.length === 0) {
+                    const p = createEmptyProgram(1);
+                    stu.programs = [p];
+                    stu.currentProgramId = p.id;
+                }
+                if (!stu.currentProgramId || !stu.programs.some(p => p.id === stu.currentProgramId)) {
+                    stu.currentProgramId = stu.programs[0].id;
+                }
+                stu.programs.forEach((prog) => {
+                    if (!Array.isArray(prog.stos) || prog.stos.length === 0) {
+                        prog.stos = ['', '', ''];
+                    }
+                    if (typeof prog.activeStoIndex !== 'number' || prog.activeStoIndex < 0 || prog.activeStoIndex >= prog.stos.length) {
+                        prog.activeStoIndex = 0;
+                    }
+                    if (!prog.sessionsBySto || typeof prog.sessionsBySto !== 'object') {
+                        prog.sessionsBySto = {};
+                    }
+                    for (let i = 0; i < prog.stos.length; i++) {
+                        if (!Array.isArray(prog.sessionsBySto[i])) {
+                            prog.sessionsBySto[i] = [];
+                        }
+                    }
+                });
+            });
+            if (!raw.currentStudentId || !raw.students.some(s => s.id === raw.currentStudentId)) {
+                raw.currentStudentId = raw.students[0].id;
+            }
+            return raw;
+        }
+
+        function loadState() {
+            let loaded = null;
+            const embeddedBackup = document.getElementById('embeddedBackupState');
+            if (embeddedBackup && embeddedBackup.textContent.trim()) {
+                try {
+                    loaded = JSON.parse(embeddedBackup.textContent.trim());
+                } catch (e) {}
+            }
+            if (!loaded) {
+                try {
+                    const saved = localStorage.getItem('aba_dtt_tracker_v2');
+                    if (saved) loaded = JSON.parse(saved);
+                } catch (e) {}
+            }
+            appState = normalizeAppState(loaded);
+        }
+
+        function saveState() {
+            if (!appState) return;
+            window.pushStateToCloud(appState);
+            updateStartScreenPreview();
+        }
+
+        function getCurrentStudent() {
+            if (!appState || !appState.students) return null;
+            return appState.students.find(s => s.id === appState.currentStudentId) || appState.students[0];
+        }
+
+        function getCurrentProgram() {
+            const stu = getCurrentStudent();
+            if (!stu || !stu.programs) return null;
+            return stu.programs.find(p => p.id === stu.currentProgramId) || stu.programs[0];
+        }
+
+        function updateStartScreenPreview() {
+            const box = document.getElementById('savedDataPreviewBox');
+            const summary = document.getElementById('savedDataSummaryText');
+            if (!box || !summary || !appState) return;
+            let totalSessions = 0;
+            appState.students.forEach(s => {
+                s.programs.forEach(p => {
+                    Object.values(p.sessionsBySto || {}).forEach(arr => {
+                        totalSessions += (arr ? arr.length : 0);
+                    });
+                });
+            });
+            const hasNamedStudent = appState.students.some(s => s.name && s.name.trim() !== '');
+            if (totalSessions > 0 || hasNamedStudent || appState.students.length > 1) {
+                box.classList.remove('hidden');
+                const names = appState.students.map((s, idx) => s.name?.trim() || `학생 ${idx + 1}`).join(', ');
+                summary.textContent = `등록 학생(${appState.students.length}명): ${names} · 누적 기록 ${totalSessions}회기`;
+            } else {
+                box.classList.add('hidden');
+            }
+        }
+
+        function enterMainApp() {
+            const startScreen = document.getElementById('startScreen');
+            const mainApp = document.getElementById('mainAppContainer');
+            if (startScreen) startScreen.classList.add('hidden');
+            if (mainApp) {
+                mainApp.classList.remove('hidden');
+                mainApp.classList.add('flex');
+            }
+            renderAll();
+            setTimeout(() => drawABASquareGridGraph(), 60);
+        }
+
+        function showStartScreen() {
+            const startScreen = document.getElementById('startScreen');
+            const mainApp = document.getElementById('mainAppContainer');
+            if (mainApp) {
+                mainApp.classList.add('hidden');
+                mainApp.classList.remove('flex');
+            }
+            if (startScreen) startScreen.classList.remove('hidden');
+            updateStartScreenPreview();
+        }
+
+        function switchStudent(studentId) {
+            appState.currentStudentId = studentId;
+            saveState();
+            renderAll();
+        }
+
+        function createNewStudent() {
+            const newStu = createEmptyStudent(appState.students.length + 1, false);
+            appState.students.push(newStu);
+            appState.currentStudentId = newStu.id;
+            saveState();
+            renderAll();
+            showToast(`${newStu.name} 탭이 추가되었습니다.`, 'success');
+        }
+
+        function deleteCurrentStudent() {
+            if (appState.students.length <= 1) {
+                showToast('최소 1명의 학생 탭은 유지되어야 합니다.', 'error');
+                return;
+            }
+            const stu = getCurrentStudent();
+            const label = stu?.name?.trim() || '현재 학생';
+            openCustomModal({
+                title: '학생 데이터 삭제',
+                message: `[${label}]의 모든 프로그램과 회기 기록이 삭제됩니다. 계속하시겠습니까?`,
+                buttons: [
+                    { label: '취소', className: 'px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 cursor-pointer', onClick: closeConfirmModal },
+                    {
+                        label: '삭제하기',
+                        className: 'px-4 py-2 text-xs font-bold text-white bg-rose-600 rounded-xl hover:bg-rose-700 cursor-pointer',
+                        onClick: () => {
+                            appState.students = appState.students.filter(s => s.id !== stu.id);
+                            appState.currentStudentId = appState.students[0].id;
+                            saveState();
+                            renderAll();
+                            closeConfirmModal();
+                            showToast(`[${label}] 데이터가 삭제되었습니다.`, 'info');
+                        }
+                    }
+                ]
+            });
+        }
+
+        function switchProgram(programId) {
+            const stu = getCurrentStudent();
+            if (!stu) return;
+            stu.currentProgramId = programId;
+            saveState();
+            renderAll();
+        }
+
+        function createNewProgram() {
+            const stu = getCurrentStudent();
+            if (!stu) return;
+            const prog = createEmptyProgram(stu.programs.length + 1);
+            stu.programs.push(prog);
+            stu.currentProgramId = prog.id;
+            saveState();
+            renderAll();
+            showToast('새 프로그램이 추가되었습니다.', 'success');
+        }
+
+        function deleteCurrentProgram() {
+            const stu = getCurrentStudent();
+            if (!stu || stu.programs.length <= 1) {
+                showToast('최소 1개의 프로그램은 유지되어야 합니다.', 'error');
+                return;
+            }
+            const prog = getCurrentProgram();
+            openCustomModal({
+                title: '프로그램 삭제',
+                message: `[${prog.domain || '현재 프로그램'}]의 모든 회기 기록이 삭제됩니다. 삭제하시겠습니까?`,
+                buttons: [
+                    { label: '취소', className: 'px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 cursor-pointer', onClick: closeConfirmModal },
+                    {
+                        label: '삭제하기',
+                        className: 'px-4 py-2 text-xs font-bold text-white bg-rose-600 rounded-xl hover:bg-rose-700 cursor-pointer',
+                        onClick: () => {
+                            stu.programs = stu.programs.filter(p => p.id !== prog.id);
+                            stu.currentProgramId = stu.programs[0].id;
+                            saveState();
+                            renderAll();
+                            closeConfirmModal();
+                            showToast('프로그램이 삭제되었습니다.', 'info');
+                        }
+                    }
+                ]
+            });
+        }
+
+        function updateStudentInfo(field, value) {
+            const stu = getCurrentStudent();
+            if (!stu) return;
+            stu[field] = value;
+            saveState();
+            if (field === 'name') {
+                renderStudentTabs();
+                renderStudentStoSummary();
+            }
+        }
+
+        function updateProgramMeta(field, value) {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+            prog[field] = value;
+            saveState();
+            if (field === 'domain') {
+                renderProgramSelector();
+                renderStudentStoSummary();
+                drawABASquareGridGraph();
+            } else if (field === 'lto') {
+                renderStudentStoSummary();
+            }
+        }
+
+        function updateSTO(idx, value) {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+            prog.stos[idx] = value;
+            saveState();
+            renderSessions();
+            renderStudentStoSummary();
+        }
+
+        function addSTO() {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+            const newIdx = prog.stos.length;
+            prog.stos.push('');
+            prog.sessionsBySto[newIdx] = [];
+            prog.activeStoIndex = newIdx;
+            saveState();
+            renderProgramMetaForm();
+            renderSessions();
+            renderStudentStoSummary();
+            drawABASquareGridGraph();
+            showToast(`STO ${newIdx + 1} 단기목표가 추가되었습니다.`, 'success');
+        }
+
+        function deleteSTO(idx) {
+            const prog = getCurrentProgram();
+            if (!prog || prog.stos.length <= 1) {
+                showToast('최소 1개의 단기목표(STO)는 필요합니다.', 'error');
+                return;
+            }
+            prog.stos.splice(idx, 1);
+            const rebuilt = {};
+            for (let i = 0; i < prog.stos.length; i++) {
+                const oldIdx = i < idx ? i : i + 1;
+                rebuilt[i] = prog.sessionsBySto[oldIdx] || [];
+            }
+            prog.sessionsBySto = rebuilt;
+            if (prog.activeStoIndex >= prog.stos.length) {
+                prog.activeStoIndex = prog.stos.length - 1;
+            }
+            saveState();
+            renderProgramMetaForm();
+            renderSessions();
+            renderStudentStoSummary();
+            drawABASquareGridGraph();
+            showToast(`STO ${idx + 1}이(가) 삭제되었습니다.`, 'info');
+        }
+
+        function selectActiveSTO(idx) {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+            prog.activeStoIndex = idx;
+            saveState();
+            renderProgramMetaForm();
+            renderSessions();
+            renderStudentStoSummary();
+        }
+
+        function renderStudentTabs() {
+            const container = document.getElementById('studentTabsContainer');
+            if (!container || !appState) return;
+            container.innerHTML = appState.students.map((stu, idx) => {
+                const isActive = stu.id === appState.currentStudentId;
+                const displayName = (stu.name || '').trim() || `학생 ${idx + 1}`;
+                const btnClass = isActive
+                    ? 'bg-white text-indigo-950 font-extrabold shadow-xs'
+                    : 'bg-indigo-900/70 text-indigo-200 hover:bg-indigo-800 hover:text-white font-semibold';
+                return `
+                    <button type="button" onclick="switchStudent('${stu.id}')"
+                        class="px-3.5 py-1.5 rounded-xl text-xs sm:text-sm transition shrink-0 flex items-center gap-1.5 cursor-pointer ${btnClass}">
+                        <i class="fa-solid fa-user-graduate text-[11px] ${isActive ? 'text-aba-600' : 'text-indigo-300'}"></i>
+                        <span>${escapeHtml(displayName)}</span>
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function renderStudentForm() {
+            const stu = getCurrentStudent();
+            if (!stu) return;
+            const nameEl = document.getElementById('inputStudentName');
+            const gradeEl = document.getElementById('inputStudentGrade');
+            const classEl = document.getElementById('inputStudentClass');
+            const disEl = document.getElementById('inputStudentDisability');
+            if (nameEl) nameEl.value = stu.name || '';
+            if (gradeEl) gradeEl.value = stu.grade || '';
+            if (classEl) classEl.value = stu.className || '';
+            if (disEl) disEl.value = stu.disability || '';
+        }
+
+        function renderProgramSelector() {
+            const stu = getCurrentStudent();
+            const selector = document.getElementById('programSelector');
+            if (!stu || !selector) return;
+            selector.innerHTML = stu.programs.map((prog, idx) => {
+                const label = (prog.domain || '').trim() || `프로그램 ${idx + 1}`;
+                return `<option value="${prog.id}" ${prog.id === stu.currentProgramId ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+            }).join('');
+        }
+
+        function renderProgramMetaForm() {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+
+            const domainEl = document.getElementById('inputDomain');
+            const ltoEl = document.getElementById('inputLTO');
+            const sdEl = document.getElementById('inputSD');
+            const promptEl = document.getElementById('inputPrompt');
+            const reinfEl = document.getElementById('inputReinforcement');
+
+            if (domainEl) domainEl.value = prog.domain || '';
+            if (ltoEl) ltoEl.value = prog.lto || '';
+            if (sdEl) sdEl.value = prog.sd || '';
+            if (promptEl) promptEl.value = prog.prompt || '';
+            if (reinfEl) reinfEl.value = prog.reinforcement || '';
+
+            const activeIdx = prog.activeStoIndex || 0;
+            const badgeEl = document.getElementById('activeStoBadge');
+            if (badgeEl) badgeEl.textContent = `현재 STO ${activeIdx + 1} 진행 중`;
+
+            const addBtnText = document.getElementById('addSessionBtnText');
+            if (addBtnText) addBtnText.textContent = `STO ${activeIdx + 1} 회기 추가`;
+
+            const listEl = document.getElementById('stoInputsList');
+            if (listEl) {
+                listEl.innerHTML = prog.stos.map((stoVal, idx) => {
+                    const isSelected = idx === activeIdx;
+                    const mastery = checkSTOMastery(prog.sessionsBySto[idx] || []);
+                    const rowBorder = isSelected
+                        ? 'border-aba-500 bg-white ring-1 ring-aba-200'
+                        : 'border-slate-200 bg-white/80 hover:border-slate-300';
+                    return `
+                        <div class="flex items-center gap-2 p-2 rounded-xl border ${rowBorder} transition">
+                            <button type="button" onclick="selectActiveSTO(${idx})" title="이 단기목표 선택"
+                                class="px-2 py-1 rounded-lg text-[11px] font-extrabold shrink-0 cursor-pointer transition ${isSelected ? 'bg-aba-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                                STO ${idx + 1}
+                            </button>
+                            <input type="text" value="${escapeHtml(stoVal)}"
+                                placeholder="단기목표 ${idx + 1} 내용 입력"
+                                oninput="updateSTO(${idx}, this.value)"
+                                class="flex-1 min-w-0 text-xs sm:text-sm bg-transparent border-none focus:outline-none text-slate-800">
+                            ${mastery.achieved ? '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[10px] font-extrabold shrink-0">완료</span>' : ''}
+                            ${prog.stos.length > 1 ? `
+                                <button type="button" onclick="deleteSTO(${idx})" title="STO 삭제"
+                                    class="text-slate-400 hover:text-rose-600 p-1 rounded-lg transition cursor-pointer shrink-0">
+                                    <i class="fa-solid fa-xmark text-xs"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function renderSessions() {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+            const activeIdx = prog.activeStoIndex || 0;
+
+            const tabsBar = document.getElementById('stoTabsBar');
+            if (tabsBar) {
+                tabsBar.innerHTML = prog.stos.map((_, idx) => {
+                    const isSelected = idx === activeIdx;
+                    const count = (prog.sessionsBySto[idx] || []).length;
+                    const mastery = checkSTOMastery(prog.sessionsBySto[idx] || []);
+                    const btnStyle = isSelected
+                        ? 'bg-aba-600 text-white font-extrabold shadow-xs'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold';
+                    return `
+                        <button type="button" onclick="selectActiveSTO(${idx})"
+                            class="px-3 py-1.5 rounded-xl text-xs transition shrink-0 flex items-center gap-1.5 cursor-pointer ${btnStyle}">
+                            <span>STO ${idx + 1}</span>
+                            <span class="px-1.5 py-0.2 rounded-full text-[10px] ${isSelected ? 'bg-white/20 text-white' : 'bg-white text-slate-600'}">${count}회기</span>
+                            ${mastery.achieved ? `<i class="fa-solid fa-circle-check ${isSelected ? 'text-emerald-200' : 'text-emerald-600'}"></i>` : ''}
+                        </button>
+                    `;
+                }).join('');
+            }
+
+            const sessions = prog.sessionsBySto[activeIdx] || [];
+            const mastery = checkSTOMastery(sessions);
+            const bannerEl = document.getElementById('stoMasteryBanner');
+            if (bannerEl) {
+                if (mastery.achieved) {
+                    bannerEl.classList.remove('hidden');
+                    const hasNext = activeIdx + 1 < prog.stos.length;
+                    bannerEl.innerHTML = `
+                        <div class="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-900">
+                            <i class="fa-solid fa-trophy text-emerald-600 text-base"></i>
+                            <span>STO ${activeIdx + 1} 완료 기준 달성! (${escapeHtml(mastery.reason)})</span>
+                        </div>
+                        ${hasNext ? `
+                            <button type="button" onclick="selectActiveSTO(${activeIdx + 1})"
+                                class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer">
+                                다음 STO ${activeIdx + 2}로 이동 <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </button>
+                        ` : `
+                            <button type="button" onclick="addSTO()"
+                                class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer">
+                                <i class="fa-solid fa-plus mr-1"></i>새 STO 추가하기
+                            </button>
+                        `}
+                    `;
+                } else {
+                    bannerEl.classList.add('hidden');
+                }
+            }
+
+            const container = document.getElementById('sessionsContainer');
+            if (!container) return;
+
+            if (sessions.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 px-4 bg-slate-50 rounded-2xl border border-dashed border-slate-300 space-y-2">
+                        <div class="text-slate-400 text-2xl"><i class="fa-regular fa-calendar-plus"></i></div>
+                        <p class="text-sm font-semibold text-slate-700">STO ${activeIdx + 1}에 등록된 회기 기록이 없습니다.</p>
+                        <p class="text-xs text-slate-500">오른쪽 상단의 <strong>[STO ${activeIdx + 1} 회기 추가]</strong> 버튼을 눌러 20런유닛 기록을 시작하세요.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 최초 진입 시 가장 최근 회기 1개만 기본으로 펼쳐 두어 스크롤 부담 최소화
+            sessions.forEach((sess, idx) => {
+                if (!initializedSessionIds.has(sess.id)) {
+                    initializedSessionIds.add(sess.id);
+                    if (idx === sessions.length - 1) {
+                        expandedSessionIds.add(sess.id);
+                    }
+                }
+            });
+
+            container.innerHTML = sessions.map((sess, sIdx) => {
+                const stats = calculateSessionStats(sess.trials);
+                const isExpanded = expandedSessionIds.has(sess.id);
+                const isFirst = sIdx === 0;
+                const isLast = sIdx === sessions.length - 1;
+
+                const trialCells = isExpanded ? Array.from({ length: TRIAL_COUNT }, (_, tIdx) => {
+                    const val = sess.trials[tIdx] || '';
+                    const plusActive = val === '+' ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xs' : 'bg-white text-slate-600 border-slate-200 hover:border-emerald-400 hover:text-emerald-700';
+                    const minusActive = val === '-' ? 'bg-rose-600 text-white border-rose-600 shadow-2xs' : 'bg-white text-slate-600 border-slate-200 hover:border-rose-400 hover:text-rose-700';
+                    const promptActive = val === 'P' ? 'bg-amber-500 text-white border-amber-500 shadow-2xs' : 'bg-white text-slate-600 border-slate-200 hover:border-amber-400 hover:text-amber-700';
+                    return `
+                        <div class="flex flex-col items-center bg-white rounded-xl border border-slate-200/90 p-1.5 gap-1">
+                            <span class="text-[10px] font-bold text-slate-400">${tIdx + 1}</span>
+                            <div class="flex items-center gap-0.5 w-full justify-center">
+                                <button type="button" onclick="setTrialValue(${activeIdx}, '${sess.id}', ${tIdx}, '+')"
+                                    class="trial-btn flex-1 py-1 rounded-md border text-xs font-extrabold cursor-pointer ${plusActive}">+</button>
+                                <button type="button" onclick="setTrialValue(${activeIdx}, '${sess.id}', ${tIdx}, '-')"
+                                    class="trial-btn flex-1 py-1 rounded-md border text-xs font-extrabold cursor-pointer ${minusActive}">-</button>
+                                <button type="button" onclick="setTrialValue(${activeIdx}, '${sess.id}', ${tIdx}, 'P')"
+                                    class="trial-btn flex-1 py-1 rounded-md border text-xs font-extrabold cursor-pointer ${promptActive}">P</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('') : '';
+
+                return `
+                    <div class="bg-slate-50/90 rounded-2xl border ${isExpanded ? 'border-aba-300 shadow-2xs' : 'border-slate-200 hover:border-slate-300'} transition overflow-hidden">
+                        <div onclick="toggleSessionExpand('${sess.id}')"
+                            class="flex flex-wrap items-center justify-between gap-2 px-4 py-3 cursor-pointer select-none ${isExpanded ? 'border-b border-slate-200/80 bg-white/70' : ''}">
+                            <div class="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+                                <span class="px-2.5 py-1 rounded-lg bg-slate-900 text-white text-xs font-extrabold">
+                                    ${sIdx + 1}회기
+                                </span>
+                                <input type="date" value="${escapeHtml(sess.date || '')}"
+                                    onclick="event.stopPropagation()"
+                                    onchange="updateSessionDate(${activeIdx}, '${sess.id}', this.value)"
+                                    class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-aba-500">
+                                <div class="flex items-center gap-1.5 text-xs font-bold">
+                                    <span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">+ ${stats.plusCount}/20 (${stats.correctPct}%)</span>
+                                    <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800">P ${stats.promptCount}/20 (${stats.promptPct}%)</span>
+                                    <span class="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800">- ${stats.minusCount}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 sm:gap-1.5 no-print" onclick="event.stopPropagation()">
+                                <!-- 회기 위치 이동 버튼 (위/아래) -->
+                                <div class="inline-flex items-center bg-white border border-slate-200 rounded-lg overflow-hidden mr-1">
+                                    <button type="button" onclick="moveSession(${activeIdx}, ${sIdx}, -1)" ${isFirst ? 'disabled' : ''} title="이전 회기와 위치 바꾸기 (위로)"
+                                        class="px-2 py-1 text-xs transition ${isFirst ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-aba-50 hover:text-aba-700 cursor-pointer'}">
+                                        <i class="fa-solid fa-arrow-up"></i>
+                                    </button>
+                                    <button type="button" onclick="moveSession(${activeIdx}, ${sIdx}, 1)" ${isLast ? 'disabled' : ''} title="다음 회기와 위치 바꾸기 (아래로)"
+                                        class="px-2 py-1 text-xs border-l border-slate-200 transition ${isLast ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-aba-50 hover:text-aba-700 cursor-pointer'}">
+                                        <i class="fa-solid fa-arrow-down"></i>
+                                    </button>
+                                </div>
+
+                                ${isExpanded ? `
+                                    <button type="button" onclick="fillAllTrials(${activeIdx}, '${sess.id}', '+')"
+                                        class="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-[11px] font-bold cursor-pointer">전체 +</button>
+                                    <button type="button" onclick="fillAllTrials(${activeIdx}, '${sess.id}', '')"
+                                        class="px-2 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-semibold cursor-pointer">비우기</button>
+                                ` : ''}
+
+                                <button type="button" onclick="deleteSession(${activeIdx}, '${sess.id}')" title="회기 삭제"
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+
+                                <button type="button" onclick="toggleSessionExpand('${sess.id}')" title="${isExpanded ? '접기' : '상세 펼치기'}"
+                                    class="ml-0.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${isExpanded ? 'bg-aba-100 text-aba-700' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}">
+                                    <span class="hidden sm:inline">${isExpanded ? '접기' : '펼치기'}</span>
+                                    <i class="fa-solid ${isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px]"></i>
+                                </button>
+                            </div>
+                        </div>
+                        ${isExpanded ? `
+                            <div class="p-4 grid grid-cols-4 sm:grid-cols-5 md:grid-cols-10 gap-1.5">
+                                ${trialCells}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+        function addSession() {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+            const dateInput = document.getElementById('newSessionDate');
+            const dateVal = dateInput?.value || new Date().toISOString().split('T')[0];
+            const stoIdx = prog.activeStoIndex || 0;
+            if (!Array.isArray(prog.sessionsBySto[stoIdx])) {
+                prog.sessionsBySto[stoIdx] = [];
+            }
+            const newId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+            prog.sessionsBySto[stoIdx].push({
+                id: newId,
+                date: dateVal,
+                trials: Array(TRIAL_COUNT).fill('')
+            });
+            // 새로 추가된 회기는 바로 입력할 수 있도록 자동으로 펼침
+            initializedSessionIds.add(newId);
+            expandedSessionIds.add(newId);
+            saveState();
+            renderProgramMetaForm();
+            renderSessions();
+            renderStudentStoSummary();
+            drawABASquareGridGraph();
+            showToast(`STO ${stoIdx + 1}에 새 회기가 추가되었습니다.`, 'success');
+        }
+
+        function toggleSessionExpand(sessionId) {
+            if (expandedSessionIds.has(sessionId)) {
+                expandedSessionIds.delete(sessionId);
+            } else {
+                expandedSessionIds.add(sessionId);
+            }
+            renderSessions();
+        }
+
+        function toggleAllSessions(expand) {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+            const activeIdx = prog.activeStoIndex || 0;
+            const sessions = prog.sessionsBySto[activeIdx] || [];
+            sessions.forEach(s => {
+                initializedSessionIds.add(s.id);
+                if (expand) expandedSessionIds.add(s.id);
+                else expandedSessionIds.delete(s.id);
+            });
+            renderSessions();
+        }
+
+        function moveSession(stoIdx, sessionIndex, direction) {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+            const list = prog.sessionsBySto[stoIdx] || [];
+            const targetIndex = sessionIndex + direction;
+            if (targetIndex < 0 || targetIndex >= list.length) return;
+
+            const temp = list[sessionIndex];
+            list[sessionIndex] = list[targetIndex];
+            list[targetIndex] = temp;
+
+            saveState();
+            renderProgramMetaForm();
+            renderSessions();
+            renderStudentStoSummary();
+            drawABASquareGridGraph();
+            showToast(`${sessionIndex + 1}회기와 ${targetIndex + 1}회기의 순서가 변경되었습니다.`, 'info');
+        }
+
+        function deleteSession(stoIdx, sessionId) {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+            expandedSessionIds.delete(sessionId);
+            prog.sessionsBySto[stoIdx] = (prog.sessionsBySto[stoIdx] || []).filter(s => s.id !== sessionId);
+            saveState();
+            renderProgramMetaForm();
+            renderSessions();
+            renderStudentStoSummary();
+            drawABASquareGridGraph();
+            showToast('회기가 삭제되었습니다.', 'info');
+        }
+
+        function updateSessionDate(stoIdx, sessionId, newDate) {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+            const sess = (prog.sessionsBySto[stoIdx] || []).find(s => s.id === sessionId);
+            if (!sess) return;
+            sess.date = newDate;
+            saveState();
+            drawABASquareGridGraph();
+        }
+
+        function setTrialValue(stoIdx, sessionId, trialIdx, value) {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+            const sess = (prog.sessionsBySto[stoIdx] || []).find(s => s.id === sessionId);
+            if (!sess) return;
+            sess.trials[trialIdx] = sess.trials[trialIdx] === value ? '' : value;
+            saveState();
+            renderProgramMetaForm();
+            renderSessions();
+            renderStudentStoSummary();
+            drawABASquareGridGraph();
+        }
+
+        function fillAllTrials(stoIdx, sessionId, value) {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+            const sess = (prog.sessionsBySto[stoIdx] || []).find(s => s.id === sessionId);
+            if (!sess) return;
+            sess.trials = Array(TRIAL_COUNT).fill(value);
+            saveState();
+            renderProgramMetaForm();
+            renderSessions();
+            renderStudentStoSummary();
+            drawABASquareGridGraph();
+        }
+
+        function calculateSessionStats(trials) {
+            const arr = Array.isArray(trials) ? trials : [];
+            let plusCount = 0;
+            let promptCount = 0;
+            let minusCount = 0;
+            arr.forEach(v => {
+                if (v === '+') plusCount++;
+                else if (v === 'P') promptCount++;
+                else if (v === '-') minusCount++;
+            });
+            const correctPct = Math.round((plusCount / TRIAL_COUNT) * 100);
+            const promptPct = Math.round((promptCount / TRIAL_COUNT) * 100);
+            return { plusCount, promptCount, minusCount, correctPct, promptPct };
+        }
+
+        function checkSTOMastery(sessions) {
+            const list = Array.isArray(sessions) ? sessions : [];
+            if (list.length === 0) return { achieved: false, reason: '', achievedAtIndex: -1 };
+
+            for (let i = 0; i < list.length; i++) {
+                const st = calculateSessionStats(list[i].trials);
+                if (st.plusCount >= 18) {
+                    return {
+                        achieved: true,
+                        reason: `${i + 1}회기 90% 이상(${st.plusCount}/20) 달성`,
+                        achievedAtIndex: i
+                    };
+                }
+                if (i > 0) {
+                    const prevSt = calculateSessionStats(list[i - 1].trials);
+                    if (prevSt.plusCount >= 16 && st.plusCount >= 16) {
+                        return {
+                            achieved: true,
+                            reason: `${i}~${i + 1}회기 연속 80% 이상 달성`,
+                            achievedAtIndex: i
+                        };
+                    }
+                }
+            }
+            return { achieved: false, reason: '', achievedAtIndex: -1 };
+        }
+
+        function setStoSummaryFilter(filter) {
+            stoSummaryFilter = filter;
+            const tabs = {
+                all: document.getElementById('stoFilterTabAll'),
+                completed: document.getElementById('stoFilterTabCompleted'),
+                incomplete: document.getElementById('stoFilterTabIncomplete')
+            };
+            Object.entries(tabs).forEach(([key, el]) => {
+                if (!el) return;
+                if (key === filter) {
+                    el.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-white text-slate-900 shadow-2xs';
+                } else {
+                    el.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer text-slate-600 hover:text-slate-900';
+                }
+            });
+            renderStudentStoSummary();
+        }
+
+        function toggleLtoAccordion(programId) {
+            if (expandedLtoProgramIds.has(programId)) {
+                expandedLtoProgramIds.delete(programId);
+            } else {
+                expandedLtoProgramIds.add(programId);
+            }
+            renderStudentStoSummary();
+        }
+
+        function jumpToProgramAndSTO(programId, stoIdx) {
+            const stu = getCurrentStudent();
+            if (!stu) return;
+            stu.currentProgramId = programId;
+            const prog = getCurrentProgram();
+            if (prog) {
+                prog.activeStoIndex = stoIdx;
+            }
+            saveState();
+            renderAll();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderStudentStoSummary() {
+            const stu = getCurrentStudent();
+            const container = document.getElementById('studentStoSummaryList');
+            const badgeAll = document.getElementById('stoCountBadgeAll');
+            const badgeComp = document.getElementById('stoCountBadgeCompleted');
+            const badgeIncomp = document.getElementById('stoCountBadgeIncomplete');
+            if (!stu || !container) return;
+
+            let totalCount = 0;
+            let completedCount = 0;
+            let incompleteCount = 0;
+
+            const programBlocks = stu.programs.map((prog, pIdx) => {
+                const items = prog.stos.map((stoText, sIdx) => {
+                    const sessions = prog.sessionsBySto[sIdx] || [];
+                    const mastery = checkSTOMastery(sessions);
+                    totalCount++;
+                    if (mastery.achieved) completedCount++;
+                    else incompleteCount++;
+                    return { stoText, sIdx, sessionsCount: sessions.length, mastery };
+                });
+
+                const filteredItems = items.filter(item => {
+                    if (stoSummaryFilter === 'completed') return item.mastery.achieved;
+                    if (stoSummaryFilter === 'incomplete') return !item.mastery.achieved;
+                    return true;
+                });
+
+                return { prog, pIdx, items, filteredItems };
+            }).filter(block => block.filteredItems.length > 0);
+
+            if (badgeAll) badgeAll.textContent = String(totalCount);
+            if (badgeComp) badgeComp.textContent = String(completedCount);
+            if (badgeIncomp) badgeIncomp.textContent = String(incompleteCount);
+
+            if (programBlocks.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-6 px-4 bg-slate-50 rounded-xl border border-dashed border-slate-200 text-xs text-slate-500">
+                        해당 조건에 맞는 단기목표(STO)가 없습니다.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = programBlocks.map(({ prog, pIdx, items, filteredItems }) => {
+                const isExpanded = expandedLtoProgramIds.has(prog.id);
+                const doneInProg = items.filter(it => it.mastery.achieved).length;
+                const domainTitle = (prog.domain || '').trim() || `프로그램 ${pIdx + 1}`;
+                const ltoText = (prog.lto || '').trim() || '장기목표(LTO) 미입력';
+
+                return `
+                    <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50/60">
+                        <div onclick="toggleLtoAccordion('${prog.id}')"
+                            class="flex items-center justify-between gap-3 px-4 py-3 bg-white hover:bg-slate-50 cursor-pointer transition">
+                            <div class="min-w-0 flex-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="px-2 py-0.5 rounded-md bg-aba-50 text-aba-700 border border-aba-200 text-[11px] font-bold">
+                                        ${escapeHtml(domainTitle)}
+                                    </span>
+                                    <span class="text-xs font-bold text-slate-600">
+                                        달성 ${doneInProg} / ${items.length}
+                                    </span>
+                                </div>
+                                <div class="text-xs sm:text-sm font-bold text-slate-900 mt-1 truncate">
+                                    LTO: ${escapeHtml(ltoText)}
+                                </div>
+                            </div>
+                            <button type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-aba-50 text-slate-700 hover:text-aba-700 text-xs font-bold shrink-0 flex items-center gap-1 cursor-pointer">
+                                <span>STO 보기</span>
+                                <i class="fa-solid ${isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px]"></i>
+                            </button>
+                        </div>
+                        ${isExpanded ? `
+                            <div class="p-3 border-t border-slate-200/80 space-y-1.5 bg-slate-50/70">
+                                ${filteredItems.map(it => `
+                                    <div onclick="jumpToProgramAndSTO('${prog.id}', ${it.sIdx})"
+                                        class="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-white border border-slate-200/90 hover:border-aba-400 cursor-pointer transition text-xs">
+                                        <div class="flex items-center gap-2 min-w-0">
+                                            <span class="px-1.5 py-0.5 rounded font-extrabold shrink-0 ${it.mastery.achieved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                                                ${it.mastery.achieved ? '완료' : '미완료'}
+                                            </span>
+                                            <span class="font-bold text-slate-700 shrink-0">STO ${it.sIdx + 1}</span>
+                                            <span class="text-slate-600 truncate">${escapeHtml(it.stoText || '(내용 미입력)')}</span>
+                                        </div>
+                                        <span class="text-[11px] text-slate-400 shrink-0">${it.sessionsCount}회기 <i class="fa-solid fa-chevron-right ml-0.5"></i></span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function drawABASquareGridGraph() {
+            const canvas = document.getElementById('abaGridCanvas');
+            const prog = getCurrentProgram();
+            if (!canvas || !prog) return;
+
+            const stoSegments = [];
+            let globalSessionNum = 1;
+            let totalSessions = 0;
+            let lastStats = null;
+
+            prog.stos.forEach((_, idx) => {
+                const sessions = prog.sessionsBySto[idx] || [];
+                const mastery = checkSTOMastery(sessions);
+                const points = sessions.map(sess => {
+                    const st = calculateSessionStats(sess.trials);
+                    lastStats = st;
+                    totalSessions++;
+                    return {
+                        sessionNum: globalSessionNum++,
+                        plus: st.plusCount,
+                        prompt: st.promptCount,
+                        date: sess.date
+                    };
+                });
+                stoSegments.push({
+                    label: `STO ${idx + 1}`,
+                    mastery,
+                    points
+                });
+            });
+
+            const statTotalEl = document.getElementById('statTotalSessions');
+            const statCorrectEl = document.getElementById('statLatestCorrect');
+            const statPromptEl = document.getElementById('statLatestPrompt');
+            if (statTotalEl) statTotalEl.textContent = `${totalSessions}회기`;
+            if (statCorrectEl) {
+                statCorrectEl.textContent = lastStats ? `${lastStats.plusCount} / 20 (${lastStats.correctPct}%)` : '- / 20 (0%)';
+            }
+            if (statPromptEl) {
+                statPromptEl.textContent = lastStats ? `${lastStats.promptCount} / 20 (${lastStats.promptPct}%)` : '- / 20 (0%)';
+            }
+
+            const minCols = Math.max(12, totalSessions + 2);
+            const cellSize = 26;
+            const padLeft = 56;
+            const padRight = 24;
+            const padTop = 44;
+            const padBottom = 52;
+
+            const plotW = minCols * cellSize;
+            const plotH = 20 * cellSize;
+            const cssW = padLeft + plotW + padRight;
+            const cssH = padTop + plotH + padBottom;
+
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.round(cssW * dpr);
+            canvas.height = Math.round(cssH * dpr);
+            canvas.style.width = `${cssW}px`;
+            canvas.style.height = `${cssH}px`;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            // 배경 초기화
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, cssW, cssH);
+
+            // 정사각형 격자선 그리기
+            for (let r = 0; r <= 20; r++) {
+                const y = padTop + r * cellSize;
+                ctx.beginPath();
+                ctx.moveTo(padLeft, y);
+                ctx.lineTo(padLeft + plotW, y);
+                ctx.strokeStyle = (r === 20) ? '#334155' : (r % 2 === 0 ? '#cbd5e1' : '#e2e8f0');
+                ctx.lineWidth = (r === 20) ? 1.5 : 0.8;
+                ctx.stroke();
+            }
+            for (let c = 0; c <= minCols; c++) {
+                const x = padLeft + c * cellSize;
+                ctx.beginPath();
+                ctx.moveTo(x, padTop);
+                ctx.lineTo(x, padTop + plotH);
+                ctx.strokeStyle = (c === 0) ? '#334155' : '#e2e8f0';
+                ctx.lineWidth = (c === 0) ? 1.5 : 0.8;
+                ctx.stroke();
+            }
+
+            // Y축 눈금 (0~20 모두 표시)
+            for (let val = 0; val <= 20; val++) {
+                const r = 20 - val;
+                const y = padTop + r * cellSize;
+                ctx.fillStyle = '#475569';
+                ctx.font = '600 10.5px Inter, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(String(val), padLeft - 8, y);
+            }
+
+            // X축 회기 번호
+            for (let c = 0; c <= minCols; c++) {
+                const x = padLeft + c * cellSize;
+                ctx.fillStyle = '#475569';
+                ctx.font = '600 11px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText(String(c), x, padTop + plotH + 8);
+            }
+
+            // X축 제목: 회기(session)
+            ctx.fillStyle = '#1e293b';
+            ctx.font = '700 11px "Noto Sans KR", Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText('회기(session)', padLeft + plotW / 2, padTop + plotH + 28);
+
+            // Y축 제목: 런유닛 정반응 (한 글자씩 세로 정렬)
+            const yChars = ['런', '유', '닛', '', '정', '반', '응'];
+            const lineStep = 15;
+            const startY = padTop + plotH / 2 - ((yChars.length - 1) * lineStep) / 2;
+            ctx.fillStyle = '#1e293b';
+            ctx.font = '700 11px "Noto Sans KR", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            yChars.forEach((ch, idx) => {
+                if (ch) {
+                    ctx.fillText(ch, 16, startY + idx * lineStep);
+                }
+            });
+
+            // STO 구간별 세로 점선 분리선 및 상단 라벨/완료 배지 + 선그래프
+            // X축 0은 Y축 선, 1회기는 col 1, 5회기는 col 5에 위치하므로
+            // 5회기에 완료되면 5회기와 6회기 정중앙인 col 5.5 위치에 세로 점선을 그려 자료점과 겹치지 않게 함
+            let startCol = 0.5;
+            stoSegments.forEach((seg, idx) => {
+                const segCols = seg.points.length > 0
+                    ? seg.points.length
+                    : (idx === stoSegments.length - 1 ? Math.max(1, minCols - startCol) : 1);
+                const endCol = startCol + segCols;
+                const xStart = padLeft + startCol * cellSize;
+                const xEnd = padLeft + endCol * cellSize;
+                const xMid = (xStart + xEnd) / 2;
+
+                // 이전 STO가 완료되었거나 다음 STO 구간으로 넘어갈 때 두 회기 숫자 정중앙(예: 5와 6 사이 5.5)에 세로 점선 표시
+                if (idx > 0) {
+                    ctx.save();
+                    ctx.setLineDash([5, 5]);
+                    ctx.beginPath();
+                    ctx.moveTo(xStart, padTop - 22);
+                    ctx.lineTo(xStart, padTop + plotH);
+                    ctx.strokeStyle = '#475569';
+                    ctx.lineWidth = 1.6;
+                    ctx.stroke();
+                    ctx.restore();
+                }
+
+                // 상단 STO 제목 + 완료 배지
+                ctx.fillStyle = '#0f172a';
+                ctx.font = '800 12px "Noto Sans KR", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const labelText = seg.mastery.achieved ? `${seg.label} [완료]` : seg.label;
+                if (seg.mastery.achieved) {
+                    const badgeW = 74;
+                    ctx.fillStyle = '#dcfce7';
+                    ctx.beginPath();
+                    ctx.roundRect(xMid - badgeW / 2, padTop - 32, badgeW, 20, 6);
+                    ctx.fill();
+                    ctx.strokeStyle = '#16a34a';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                    ctx.fillStyle = '#15803d';
+                }
+                ctx.fillText(labelText, xMid, padTop - 22);
+
+                // 데이터 점 및 연결선 (단계 변경선 넘어서 연결하지 않음)
+                if (seg.points.length > 0) {
+                    // 촉구(P) 점선
+                    ctx.save();
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = '#475569';
+                    ctx.lineWidth = 1.8;
+                    ctx.beginPath();
+                    seg.points.forEach((pt, pIdx) => {
+                        const px = padLeft + pt.sessionNum * cellSize;
+                        const py = padTop + (20 - pt.prompt) * cellSize;
+                        if (pIdx === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    });
+                    ctx.stroke();
+                    ctx.restore();
+
+                    // 정반응(+) 실선
+                    ctx.strokeStyle = '#0f172a';
+                    ctx.lineWidth = 2.2;
+                    ctx.beginPath();
+                    seg.points.forEach((pt, pIdx) => {
+                        const px = padLeft + pt.sessionNum * cellSize;
+                        const py = padTop + (20 - pt.plus) * cellSize;
+                        if (pIdx === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    });
+                    ctx.stroke();
+
+                    // 마커 그리기
+                    seg.points.forEach(pt => {
+                        const px = padLeft + pt.sessionNum * cellSize;
+                        const pyPrompt = padTop + (20 - pt.prompt) * cellSize;
+                        const pyPlus = padTop + (20 - pt.plus) * cellSize;
+
+                        // 촉구 빈 원
+                        ctx.beginPath();
+                        ctx.arc(px, pyPrompt, 4.5, 0, Math.PI * 2);
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fill();
+                        ctx.strokeStyle = '#0f172a';
+                        ctx.lineWidth = 1.8;
+                        ctx.stroke();
+
+                        // 정반응 채운 원
+                        ctx.beginPath();
+                        ctx.arc(px, pyPlus, 4.8, 0, Math.PI * 2);
+                        ctx.fillStyle = '#0f172a';
+                        ctx.fill();
+                    });
+                }
+
+                startCol = endCol;
+            });
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            const colorMap = {
+                success: 'bg-emerald-700 text-white',
+                error: 'bg-rose-700 text-white',
+                info: 'bg-slate-900 text-white'
+            };
+            toast.className = `${colorMap[type] || colorMap.info} px-4 py-2.5 rounded-xl shadow-lg text-xs sm:text-sm font-semibold fade-animate pointer-events-auto`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.25s';
+                setTimeout(() => toast.remove(), 260);
+            }, 3000);
+        }
+        window.showToast = showToast;
+
+        function openCustomModal({ title, message, buttons }) {
+            const modal = document.getElementById('confirmModal');
+            const titleEl = document.getElementById('modalTitle');
+            const msgEl = document.getElementById('modalMessage');
+            const actionsEl = document.getElementById('modalExtraActions');
+            if (!modal || !titleEl || !msgEl || !actionsEl) return;
+
+            titleEl.textContent = title || '확인';
+            msgEl.style.whiteSpace = 'normal';
+            msgEl.textContent = message || '';
+            actionsEl.innerHTML = '';
+
+            (buttons || []).forEach(btnCfg => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = btnCfg.label;
+                btn.className = btnCfg.className;
+                btn.onclick = btnCfg.onClick;
+                actionsEl.appendChild(btn);
+            });
+            modal.classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirmModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function openResetModal() {
+            openCustomModal({
+                title: '데이터 초기화',
+                message: '현재 저장된 모든 학생 및 회기 데이터를 초기 샘플 상태로 되돌리시겠습니까?',
+                buttons: [
+                    { label: '취소', className: 'px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 cursor-pointer', onClick: closeConfirmModal },
+                    {
+                        label: '초기화 실행',
+                        className: 'px-4 py-2 text-xs font-bold text-white bg-rose-600 rounded-xl hover:bg-rose-700 cursor-pointer',
+                        onClick: () => {
+                            appState = createInitialDefaultState();
+                            saveState();
+                            renderAll();
+                            closeConfirmModal();
+                            showToast('데이터가 초기 상태로 재설정되었습니다.', 'info');
+                        }
+                    }
+                ]
+            });
+        }
+
+        function exportBackupJSON() {
+            const blob = new Blob([JSON.stringify(appState, null, 2)], { type: 'application/json;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const todayStr = new Date().toISOString().split('T')[0];
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ABA_DTT_백업_${todayStr}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('전체 데이터 백업 파일(.json)이 저장되었습니다.', 'success');
+        }
+
+        function importBackupJSON(event) {
+            const file = event.target?.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    appState = normalizeAppState(parsed);
+                    saveState();
+                    renderAll();
+                    showToast('백업 파일에서 데이터를 성공적으로 불러왔습니다!', 'success');
+                } catch (err) {
+                    showToast('올바른 백업 JSON 파일이 아닙니다.', 'error');
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        /**
+         * 사용자 첨부 로고 이미지(로고_2.png) 직접 선택 및 영구 저장/적용
+         */
+        function applySavedCustomLogo() {
+            let savedLogoData = null;
+            const embeddedLogo = document.getElementById('embeddedCustomLogoData');
+            if (embeddedLogo && embeddedLogo.textContent.trim()) {
+                savedLogoData = embeddedLogo.textContent.trim();
+            } else {
+                try {
+                    savedLogoData = localStorage.getItem('aba_custom_brand_logo_v1');
+                } catch (e) {}
+            }
+            if (savedLogoData) {
+                const startSvg = document.getElementById('startBrandLogoSvg');
+                if (startSvg) startSvg.classList.add('hidden');
+                ['startBrandLogoImg', 'headerBrandLogoImg', 'footerBrandLogoImg'].forEach(imgId => {
+                    const imgEl = document.getElementById(imgId);
+                    if (imgEl) {
+                        imgEl.onerror = null;
+                        imgEl.src = savedLogoData;
+                        imgEl.classList.remove('hidden');
+                        imgEl.style.display = 'block';
+                        if (imgEl.nextElementSibling) imgEl.nextElementSibling.classList.add('hidden');
+                    }
+                });
+            }
+        }
+
+        const handleCustomLogoUpload = window.handleCustomLogoUpload;
+
+        /**
+         * ============================================================================
+         * 채팅 없이 단독 실행 가능한 완성형 앱 파일(.html) 내보내기
+         * ============================================================================
+         */
+        function downloadStandaloneApp() {
+            const clonedDoc = document.documentElement.cloneNode(true);
+
+            // 모달이나 토스트가 열려 있다면 깨끗하게 초기화
+            const modalEl = clonedDoc.querySelector('#confirmModal');
+            if (modalEl) modalEl.classList.add('hidden');
+            const toastEl = clonedDoc.querySelector('#toastContainer');
+            if (toastEl) toastEl.innerHTML = '';
+
+            // 기존 내장 데이터 스크립트 제거 후 최신 appState를 JSON으로 삽입
+            const oldEmbedded = clonedDoc.querySelector('#embeddedBackupState');
+            if (oldEmbedded) oldEmbedded.remove();
+
+            const stateScript = clonedDoc.ownerDocument.createElement('script');
+            stateScript.id = 'embeddedBackupState';
+            stateScript.type = 'application/json';
+            stateScript.textContent = JSON.stringify(appState);
+            clonedDoc.querySelector('body').appendChild(stateScript);
+
+            const htmlOutput = '<!DOCTYPE html>\n' + clonedDoc.outerHTML;
+            const blob = new Blob([htmlOutput], { type: 'text/html;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            const stu = getCurrentStudent();
+            const stName = (stu?.name || '학생').trim().replace(/[\\/:*?"<>|]/g, '_');
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `클릭데이터기록_${stName}_${todayStr}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast('채팅 없이 바로 열 수 있는 앱+데이터 파일(.html)이 저장되었습니다!', 'success');
+        }
+
+        /**
+         * ============================================================================
+         * Netlify Drop 드래그 앤 드롭 배포 전용 깨끗한 index.html 다운로드
+         * (다른 사람이 접속해도 내 학생 데이터가 노출되지 않도록 빈 템플릿으로 생성)
+         * ============================================================================
+         */
+        function downloadNetlifyIndex() {
+            const clonedDoc = document.documentElement.cloneNode(true);
+
+            const modalEl = clonedDoc.querySelector('#confirmModal');
+            if (modalEl) modalEl.classList.add('hidden');
+            const toastEl = clonedDoc.querySelector('#toastContainer');
+            if (toastEl) toastEl.innerHTML = '';
+
+            // 배포용 파일에는 개인 학생 데이터가 포함되지 않도록 제거
+            const oldEmbedded = clonedDoc.querySelector('#embeddedBackupState');
+            if (oldEmbedded) oldEmbedded.remove();
+
+            // 사용자가 연결한 원본 로고 이미지가 있다면 배포 파일에도 자동 포함
+            const oldLogoScript = clonedDoc.querySelector('#embeddedCustomLogoData');
+            if (oldLogoScript) oldLogoScript.remove();
+            try {
+                const savedLogo = localStorage.getItem('aba_custom_brand_logo_v1');
+                if (savedLogo) {
+                    const logoScript = clonedDoc.ownerDocument.createElement('script');
+                    logoScript.id = 'embeddedCustomLogoData';
+                    logoScript.type = 'text/plain';
+                    logoScript.textContent = savedLogo;
+                    clonedDoc.querySelector('body').appendChild(logoScript);
+                }
+            } catch (e) {}
+
+            // 사용자가 Firebase 설정을 저장해 둔 경우 Netlify용 파일에 자동 포함시켜 폰에서도 별도 설정 없이 바로 Google 로그인 가능하게 함
+            const oldCfgScript = clonedDoc.querySelector('#embeddedFirebaseConfig');
+            if (oldCfgScript) oldCfgScript.remove();
+            if (activeFirebaseConfig && activeFirebaseConfig.apiKey) {
+                const cfgScript = clonedDoc.ownerDocument.createElement('script');
+                cfgScript.id = 'embeddedFirebaseConfig';
+                cfgScript.type = 'application/json';
+                cfgScript.textContent = JSON.stringify(activeFirebaseConfig);
+                clonedDoc.querySelector('body').appendChild(cfgScript);
+            }
+
+            const htmlOutput = '<!DOCTYPE html>\n' + clonedDoc.outerHTML;
+            const blob = new Blob([htmlOutput], { type: 'text/html;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'index.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast('Netlify 업로드용 index.html 파일이 저장되었습니다! (개인정보 제외됨)', 'success');
+        }
+
+        /**
+         * ============================================================================
+         * 실시간 그래프 및 기록지 인쇄 / PDF 저장 기능
+         * ============================================================================
+         */
+        function printOrSavePDF() {
+            const printDateEl = document.getElementById('printDateText');
+            if (printDateEl) {
+                const now = new Date();
+                printDateEl.textContent = `출력일: ${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일`;
+            }
+            drawABASquareGridGraph();
+            showToast('인쇄 창에서 대상을 [PDF로 저장]으로 선택하면 PDF로 다운로드됩니다.', 'info');
+            setTimeout(() => {
+                window.print();
+            }, 250);
+        }
+
+        /**
+         * ============================================================================
+         * 스마트폰 / PC 바탕화면 앱(어플) 설치 안내 모달
+         * ============================================================================
+         */
+        function openAppInstallGuide() {
+            openCustomModal({
+                title: '일반 어플처럼 바탕화면에 설치하기',
+                message: '이 웹 앱은 별도 스토어 없이 스마트폰이나 PC 바탕화면에 앱 아이콘으로 바로 설치해 사용할 수 있습니다.\n\n• 아이폰/아이패드 (Safari): 하단 [공유(□↑)] 버튼 → [홈 화면에 추가]\n• 갤럭시/안드로이드 (Chrome): 우측 상단 [⋮] 메뉴 → [홈 화면에 추가] 또는 [앱 설치]\n• PC (Chrome / Edge): 주소창 오른쪽 끝 [앱 설치(모니터+화살표)] 아이콘 클릭\n• 오프라인 파일 사용 시: [내 기기에 앱 저장]으로 받은 파일을 바탕화면에 두면 클릭 한 번으로 열립니다.',
+                iconClass: 'fa-solid fa-mobile-screen-button',
+                iconBgClass: 'bg-blue-100 text-aba-600',
+                buttons: [
+                    {
+                        label: '확인',
+                        className: 'px-4 py-2 text-xs font-semibold text-white bg-aba-600 rounded-xl hover:bg-aba-700 cursor-pointer',
+                        onClick: closeConfirmModal
+                    }
+                ]
+            });
+            const msgEl = document.getElementById('modalMessage');
+            if (msgEl) msgEl.style.whiteSpace = 'pre-line';
+        }
+
+        /**
+         * ============================================================================
+         * 앱 접속 QR 코드 생성, 링크 복사 및 PNG 이미지 다운로드
+         * ============================================================================
+         */
+        const DEFAULT_PUBLIC_APP_URL = 'https://aba-dtt-tracker.vercel.app';
+
+        function getShareAppUrl() {
+            const origin = window.location.origin || '';
+            if (origin.startsWith('http') && !origin.includes('localhost') && !origin.includes('127.0.0.1') && !origin.includes('googleusercontent') && !origin.includes('webcontainer')) {
+                return origin;
+            }
+            return DEFAULT_PUBLIC_APP_URL;
+        }
+
+        function openQrShareModal() {
+            const modal = document.getElementById('qrShareModal');
+            const imgEl = document.getElementById('qrCodePreviewImg');
+            const urlTextEl = document.getElementById('qrTargetUrlText');
+            const targetUrl = getShareAppUrl();
+
+            if (urlTextEl) urlTextEl.textContent = targetUrl;
+            if (imgEl) {
+                imgEl.crossOrigin = 'anonymous';
+                imgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=12&data=${encodeURIComponent(targetUrl)}`;
+            }
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeQrShareModal() {
+            const modal = document.getElementById('qrShareModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function copyShareAppUrl() {
+            const targetUrl = getShareAppUrl();
+            const tmp = document.createElement('textarea');
+            tmp.value = targetUrl;
+            document.body.appendChild(tmp);
+            tmp.select();
+            document.execCommand('copy');
+            document.body.removeChild(tmp);
+            showToast('앱 접속 주소가 클립보드에 복사되었습니다!', 'success');
+        }
+
+        function downloadQrCodePng() {
+            const imgEl = document.getElementById('qrCodePreviewImg');
+            const targetUrl = getShareAppUrl();
+            if (!imgEl || !imgEl.complete) {
+                showToast('QR 이미지를 불러오는 중입니다. 잠시 후 다시 눌러주세요.', 'info');
+                return;
+            }
+            try {
+                const canvas = document.createElement('canvas');
+                const size = 440;
+                canvas.width = size;
+                canvas.height = size + 44;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(imgEl, 20, 16, 400, 400);
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 16px "Noto Sans KR", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('클릭으로 끝내는 데이터 기록', size / 2, size + 24);
+
+                canvas.toBlob((blob) => {
+                    if (!blob) return;
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = '클릭으로_끝내는_데이터_기록_QR코드.png';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showToast('QR 코드 이미지(.png)가 저장되었습니다!', 'success');
+                }, 'image/png');
+            } catch (e) {
+                window.open(`https://api.qrserver.com/v1/create-qr-code/?size=500x500&margin=12&data=${encodeURIComponent(targetUrl)}`, '_blank');
+            }
+        }
+
+        /**
+         * ============================================================================
+         * CSV 내보내기 기능 (학생 정보 및 무제한 STO 포함 + UTF-8 BOM 한글 호환)
+         * ============================================================================
+         */
+        function exportToCSV() {
+            const prog = getCurrentProgram();
+            if (!prog) return;
+            const stInfo = getCurrentStudent() || {};
+
+            const rows = [];
+            rows.push(['[ABA DTT 중재 데이터 기록지 - 클릭으로 끝내는 데이터 기록]']);
+            rows.push(['학생 이름', stInfo.name || '', '학년', stInfo.grade || '', '반', stInfo.className || '', '장애 유형', stInfo.disability || '']);
+            rows.push(['완료 기준', '런유닛 20시도 중 90%(18번 이상 +) 1회 또는 20시도 중 80%(16번 이상 +) 연속 2회 달성 시 다음 단기 학습목표로 이동']);
+            rows.push([]);
+            rows.push(['영역(Domain)', prog.domain || '']);
+            rows.push(['LTO(장기목표)', prog.lto || '']);
+            prog.stos.forEach((stoText, idx) => {
+                const mastery = checkSTOMastery(prog.sessionsBySto[idx] || []);
+                rows.push([`STO ${idx + 1}`, stoText || '', mastery.achieved ? `완료 (${mastery.reason})` : '진행 중']);
+            });
+            rows.push(['지시어(SD)', prog.sd || '']);
+            rows.push(['촉구방법', prog.prompt || '']);
+            rows.push(['지시법/강화비율', prog.reinforcement || '']);
+            rows.push([]);
+
+            const trialHeaders = Array.from({ length: TRIAL_COUNT }, (_, i) => `시도${i + 1}`);
+            rows.push([
+                '누적회기',
+                '단기목표(STO)',
+                '날짜',
+                '런유닛 정반응(+)수',
+                '정반응(%)',
+                '촉구반응(P)수',
+                '촉구반응(%)',
+                '오반응(-)수',
+                ...trialHeaders
+            ]);
+
+            let globalSeq = 1;
+            for (let stoIdx = 0; stoIdx < prog.stos.length; stoIdx++) {
+                const stoName = `STO ${stoIdx + 1}${prog.stos[stoIdx] ? ': ' + prog.stos[stoIdx] : ''}`;
+                const sessions = prog.sessionsBySto[stoIdx] || [];
+                sessions.forEach((sess) => {
+                    const st = calculateSessionStats(sess.trials);
+                    const trialVals = sess.trials.map(v => v || '');
+                    rows.push([
+                        `${globalSeq++}회기`,
+                        stoName,
+                        sess.date,
+                        st.plusCount,
+                        `${st.correctPct}%`,
+                        st.promptCount,
+                        `${st.promptPct}%`,
+                        st.minusCount,
+                        ...trialVals
+                    ]);
+                });
+            }
+
+            const csvContent = '\uFEFF' + rows.map(row =>
+                row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+            ).join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const safeStudent = (stInfo.name || '학생').replace(/[\\/:*?"<>|]/g, '_');
+            const safeDomain = (prog.domain || 'ABA_DTT').replace(/[\\/:*?"<>|]/g, '_');
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            a.href = url;
+            a.download = `클릭데이터기록_${safeStudent}_${safeDomain}_${todayStr}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast('CSV 파일이 다운로드되었습니다.', 'success');
+        }
+
+        /**
+         * XSS 방지용 HTML 이스케이프 헬퍼
+         */
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        /**
+         * 전체 화면 일괄 렌더링
+         */
+        function renderAll() {
+            renderStudentTabs();
+            renderStudentForm();
+            renderStudentStoSummary();
+            renderProgramSelector();
+            renderProgramMetaForm();
+            renderSessions();
+            drawABASquareGridGraph();
+        }
+
+        /**
+         * 초기화 및 창 크기 조절 대응 + 전역 onclick 핸들러 등록
+         */
+        Object.assign(window, {
+            enterMainApp,
+            showStartScreen,
+            switchStudent,
+            createNewStudent,
+            deleteCurrentStudent,
+            switchProgram,
+            createNewProgram,
+            deleteCurrentProgram,
+            updateStudentInfo,
+            updateProgramMeta,
+            updateSTO,
+            addSTO,
+            deleteSTO,
+            selectActiveSTO,
+            setStoSummaryFilter,
+            toggleLtoAccordion,
+            jumpToProgramAndSTO,
+            addSession,
+            toggleSessionExpand,
+            toggleAllSessions,
+            moveSession,
+            deleteSession,
+            updateSessionDate,
+            setTrialValue,
+            fillAllTrials,
+            openResetModal,
+            closeConfirmModal,
+            exportBackupJSON,
+            importBackupJSON,
+            downloadStandaloneApp,
+            downloadNetlifyIndex,
+            printOrSavePDF,
+            openAppInstallGuide,
+            openQrShareModal,
+            closeQrShareModal,
+            copyShareAppUrl,
+            downloadQrCodePng,
+            exportToCSV,
+            handleGoogleAuthClick,
+            openCloudConfigModal,
+            closeCloudConfigModal,
+            saveFirebaseConfigFromModal,
+            clearSavedFirebaseConfig,
+            handleCustomLogoUpload
+        });
+
+        // 동적 PWA Web App Manifest 및 앱 아이콘 등록 (홈 화면 추가 시 일반 어플처럼 실행)
+        function setupPWAManifest() {
+            try {
+                const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#2563eb"/><path d="M112 352l96-112 80 64 112-144" fill="none" stroke="#ffffff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/><circle cx="112" cy="352" r="22" fill="#ffffff"/><circle cx="208" cy="240" r="22" fill="#ffffff"/><circle cx="288" cy="304" r="22" fill="#ffffff"/><circle cx="400" cy="160" r="22" fill="#10b981"/></svg>`;
+                const iconUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg);
+
+                const appleIcon = document.createElement('link');
+                appleIcon.rel = 'apple-touch-icon';
+                appleIcon.href = iconUrl;
+                document.head.appendChild(appleIcon);
+
+                const manifestObj = {
+                    name: '클릭으로 끝내는 데이터 기록',
+                    short_name: '클릭데이터기록',
+                    start_url: '.',
+                    display: 'standalone',
+                    background_color: '#f8fafc',
+                    theme_color: '#2563eb',
+                    icons: [{ src: iconUrl, sizes: '512x512', type: 'image/svg+xml' }]
+                };
+                const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
+                const manifestLink = document.createElement('link');
+                manifestLink.rel = 'manifest';
+                manifestLink.href = URL.createObjectURL(manifestBlob);
+                document.head.appendChild(manifestLink);
+            } catch (e) {
+                console.warn('PWA 매니페스트 등록 생략:', e);
+            }
+        }
+
+        window.onload = function() {
+            setupPWAManifest();
+            applySavedCustomLogo();
+            removeNetlifyBadge();
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('newSessionDate').value = todayStr;
+
+            loadState();
+            updateStartScreenPreview();
+            initCloudSync();
+        };
+
+        // Netlify 무료 요금제 자동 삽입 배지(일반 DOM 및 Shadow DOM) 실시간 감지 및 제거
+        function removeNetlifyBadge() {
+            const purge = () => {
+                document.querySelectorAll('a[href*="netlify.com"], [class*="netlify"], [id*="netlify"]').forEach(el => {
+                    if (!el.closest('#mainAppContainer') && !el.closest('#startScreen') && !el.closest('#confirmModal') && !el.closest('#cloudConfigModal')) {
+                        el.remove();
+                    }
+                });
+                document.querySelectorAll('body > *').forEach(el => {
+                    if (el.shadowRoot) {
+                        const srText = (el.shadowRoot.textContent || '').toLowerCase();
+                        const srHtml = (el.shadowRoot.innerHTML || '').toLowerCase();
+                        if (srText.includes('netlify') || srHtml.includes('netlify')) {
+                            el.remove();
+                        }
+                    }
+                });
+            };
+            purge();
+            const observer = new MutationObserver(() => purge());
+            observer.observe(document.documentElement, { childList: true, subtree: true });
+            setTimeout(purge, 500);
+            setTimeout(purge, 1500);
+            setTimeout(purge, 3000);
+        }
+
+        window.addEventListener('resize', () => {
+            const mainContainer = document.getElementById('mainAppContainer');
+            if (mainContainer && !mainContainer.classList.contains('hidden')) {
+                drawABASquareGridGraph();
+            }
+        });
+    </script>
+</body>
+</html>
