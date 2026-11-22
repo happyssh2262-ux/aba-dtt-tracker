@@ -3078,27 +3078,76 @@
         // 동적 PWA Web App Manifest 및 앱 아이콘 등록 (홈 화면 추가 시 일반 어플처럼 실행)
         function setupPWAManifest() {
             try {
-                const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#2563eb"/><path d="M112 352l96-112 80 64 112-144" fill="none" stroke="#ffffff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/><circle cx="112" cy="352" r="22" fill="#ffffff"/><circle cx="208" cy="240" r="22" fill="#ffffff"/><circle cx="288" cy="304" r="22" fill="#ffffff"/><circle cx="400" cy="160" r="22" fill="#10b981"/></svg>`;
-                const iconUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg);
+                // Edge 및 Chrome 설치 조건(192x192, 512x512 PNG 아이콘)을 100% 충족하도록 Canvas로 고화질 PNG 아이콘 생성
+                function createPngIcon(size) {
+                    const c = document.createElement('canvas');
+                    c.width = size;
+                    c.height = size;
+                    const ctx = c.getContext('2d');
+                    const r = size * 0.22;
+
+                    // 파란색 둥근 사각형 배경
+                    ctx.fillStyle = '#2563eb';
+                    ctx.beginPath();
+                    ctx.roundRect(0, 0, size, size, r);
+                    ctx.fill();
+
+                    // 흰색 상승 꺾은선 그래프
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = size * 0.07;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+                    ctx.beginPath();
+                    ctx.moveTo(size * 0.22, size * 0.69);
+                    ctx.lineTo(size * 0.41, size * 0.47);
+                    ctx.lineTo(size * 0.56, size * 0.59);
+                    ctx.lineTo(size * 0.78, size * 0.31);
+                    ctx.stroke();
+
+                    // 데이터 포인트 원
+                    const pts = [
+                        { x: 0.22, y: 0.69, color: '#ffffff' },
+                        { x: 0.41, y: 0.47, color: '#ffffff' },
+                        { x: 0.56, y: 0.59, color: '#ffffff' },
+                        { x: 0.78, y: 0.31, color: '#10b981' }
+                    ];
+                    pts.forEach(p => {
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath();
+                        ctx.arc(size * p.x, size * p.y, size * 0.045, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+
+                    return c.toDataURL('image/png');
+                }
+
+                const icon192 = createPngIcon(192);
+                const icon512 = createPngIcon(512);
 
                 const appleIcon = document.createElement('link');
                 appleIcon.rel = 'apple-touch-icon';
-                appleIcon.href = iconUrl;
+                appleIcon.href = icon192;
                 document.head.appendChild(appleIcon);
 
                 const manifestObj = {
+                    id: 'https://aba-dtt-tracker.vercel.app/',
                     name: '클릭으로 끝내는 데이터 기록',
                     short_name: '클릭데이터기록',
-                    start_url: '.',
+                    description: '개별 시도 교수(DTT) 중재 데이터 관리 앱',
+                    start_url: 'https://aba-dtt-tracker.vercel.app/',
+                    scope: 'https://aba-dtt-tracker.vercel.app/',
                     display: 'standalone',
                     background_color: '#f8fafc',
                     theme_color: '#2563eb',
-                    icons: [{ src: iconUrl, sizes: '512x512', type: 'image/svg+xml' }]
+                    icons: [
+                        { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+                        { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+                    ]
                 };
-                const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
+                const manifestDataUrl = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifestObj));
                 const manifestLink = document.createElement('link');
                 manifestLink.rel = 'manifest';
-                manifestLink.href = URL.createObjectURL(manifestBlob);
+                manifestLink.href = manifestDataUrl;
                 document.head.appendChild(manifestLink);
             } catch (e) {
                 console.warn('PWA 매니페스트 등록 생략:', e);
