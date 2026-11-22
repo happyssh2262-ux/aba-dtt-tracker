@@ -360,23 +360,23 @@
                         <div id="step2CircleNum" class="w-8 h-8 rounded-full bg-slate-400 text-white font-extrabold text-sm flex items-center justify-center shrink-0 transition-colors">
                             2
                         </div>
-                        <div>
-                            <div class="flex items-center gap-1.5">
-                                <span id="startStep2Badge" class="px-2 py-0.5 rounded-md bg-slate-500 text-white text-[10px] font-extrabold">2단계</span>
-                                <span id="startStep2Title" class="text-xs sm:text-sm font-extrabold text-slate-800">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <span id="startStep2Badge" class="px-2 py-0.5 rounded-md bg-slate-500 text-white text-[10px] font-extrabold shrink-0">2단계</span>
+                                <span id="startStep2Title" class="text-xs sm:text-sm font-extrabold text-slate-800 break-keep">
                                     내 데이터로 시작하기
                                 </span>
                             </div>
-                            <p id="startStep2Desc" class="text-[11px] sm:text-xs text-slate-500 mt-0.5">
-                                로그인 완료 후 아래 버튼을 눌러 학생별 기록 및 그래프 화면으로 들어갑니다.
+                            <p id="startStep2Desc" class="text-[11px] sm:text-xs text-slate-500 mt-0.5 leading-snug break-keep">
+                                로그인 완료 후 아래 버튼을 눌러<br class="sm:hidden"> 학생별 기록 및 그래프 화면으로 들어갑니다.
                             </p>
                         </div>
                     </div>
 
                     <button type="button" id="mainStartBtn" onclick="enterMainApp()"
-                        class="group w-full py-4 px-6 rounded-xl bg-slate-700 hover:bg-slate-800 active:scale-[0.99] text-white font-extrabold text-base sm:text-lg shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer">
-                        <span id="mainStartBtnText">2. 내 데이터로 시작하기</span>
-                        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        class="group w-full py-3.5 sm:py-4 px-4 sm:px-6 rounded-xl bg-slate-700 hover:bg-slate-800 active:scale-[0.99] text-white font-extrabold text-[15px] sm:text-lg shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap">
+                        <span id="mainStartBtnText" class="break-keep">2. 내 데이터로 시작하기</span>
+                        <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform shrink-0"></i>
                     </button>
                 </div>
             </div>
@@ -2022,9 +2022,9 @@
                                     <i class="fa-solid fa-trash-can text-xs"></i>
                                 </button>
 
-                                <button type="button" onclick="toggleSessionExpand('${sess.id}')" title="${isExpanded ? '접기' : '상세 펼치기'}"
-                                    class="ml-0.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${isExpanded ? 'bg-aba-100 text-aba-700' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}">
-                                    <span class="hidden sm:inline">${isExpanded ? '접기' : '펼치기'}</span>
+                                <button type="button" onclick="toggleSessionExpand('${sess.id}')" title="${isExpanded ? '시도 기록 접기' : '시도 기록 펼치기'}"
+                                    class="ml-0.5 inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-extrabold transition cursor-pointer shadow-2xs whitespace-nowrap ${isExpanded ? 'bg-aba-600 text-white hover:bg-aba-700' : 'bg-blue-50 border border-blue-200 text-aba-700 hover:bg-blue-100'}">
+                                    <span>${isExpanded ? '기록 접기' : '기록 펼치기'}</span>
                                     <i class="fa-solid ${isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'} text-[10px]"></i>
                                 </button>
                             </div>
@@ -2033,7 +2033,13 @@
                             <div class="p-4 grid grid-cols-4 sm:grid-cols-5 md:grid-cols-10 gap-1.5">
                                 ${trialCells}
                             </div>
-                        ` : ''}
+                        ` : `
+                            <div onclick="toggleSessionExpand('${sess.id}')"
+                                class="px-4 py-2 bg-slate-100/70 hover:bg-blue-50/70 border-t border-slate-200/70 text-[11px] font-semibold text-slate-500 hover:text-aba-700 flex items-center justify-between cursor-pointer transition no-print">
+                                <span>접혀 있음 · 터치하면 20런유닛(1~20번) 기록표가 펼쳐집니다</span>
+                                <span class="text-aba-600 font-bold">펼치기 <i class="fa-solid fa-chevron-down ml-0.5"></i></span>
+                            </div>
+                        `}
                     </div>
                 `;
             }).join('');
